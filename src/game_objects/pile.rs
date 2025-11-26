@@ -1,4 +1,4 @@
-use crate::card::{Card, Rank};
+use crate::game_objects::card::{Card, Rank};
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
 pub enum PileType {
