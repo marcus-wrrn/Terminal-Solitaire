@@ -1,3 +1,3 @@
-mod card_renderer;
+mod board_renderer;
 
-pub use card_renderer::CardRenderer;
+pub use board_renderer::BoardRenderer;

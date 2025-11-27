@@ -38,14 +38,14 @@ impl Deck {
         self.cards.shuffle(&mut rng);
     }
 
-    pub fn draw(&mut self) -> Option<Card> {
+    pub fn draw_card(&mut self) -> Option<Card> {
         self.cards.pop()
     }
 
-    pub fn draw_multiple(&mut self, count: usize) -> Vec<Card> {
+    pub fn draw_multiple_cards(&mut self, count: usize) -> Vec<Card> {
         let mut drawn = Vec::new();
         for _ in 0..count {
-            if let Some(card) = self.draw() {
+            if let Some(card) = self.draw_card() {
                 drawn.push(card);
             } else {
                 break;

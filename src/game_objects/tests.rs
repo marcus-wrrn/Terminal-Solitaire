@@ -104,7 +104,7 @@ mod tests {
         let mut seen_cards = HashSet::new();
 
         for _ in 0..52 {
-            if let Some(card) = deck.draw() {
+            if let Some(card) = deck.draw_card() {
                 let card_id = (card.suit as u8, card.rank as u8);
                 assert!(
                     seen_cards.insert(card_id),
@@ -127,7 +127,7 @@ mod tests {
         let mut spades = 0;
 
         for _ in 0..52 {
-            if let Some(card) = deck.draw() {
+            if let Some(card) = deck.draw_card() {
                 match card.suit {
                     Suit::Hearts => hearts += 1,
                     Suit::Diamonds => diamonds += 1,
@@ -148,7 +148,7 @@ mod tests {
         let mut deck = Deck::new();
         let initial_len = deck.len();
 
-        let card = deck.draw();
+        let card = deck.draw_card();
         assert!(card.is_some());
         assert_eq!(deck.len(), initial_len - 1);
     }
@@ -159,18 +159,18 @@ mod tests {
 
         for i in 0..52 {
             assert_eq!(deck.len(), 52 - i);
-            assert!(deck.draw().is_some());
+            assert!(deck.draw_card().is_some());
         }
 
         assert!(deck.is_empty());
         assert_eq!(deck.len(), 0);
-        assert!(deck.draw().is_none());
+        assert!(deck.draw_card().is_none());
     }
 
     #[test]
     fn test_deck_draw_multiple() {
         let mut deck = Deck::new();
-        let cards = deck.draw_multiple(5);
+        let cards = deck.draw_multiple_cards(5);
 
         assert_eq!(cards.len(), 5);
         assert_eq!(deck.len(), 47);
@@ -179,7 +179,7 @@ mod tests {
     #[test]
     fn test_deck_draw_multiple_more_than_available() {
         let mut deck = Deck::new();
-        let cards = deck.draw_multiple(60);
+        let cards = deck.draw_multiple_cards(60);
 
         assert_eq!(cards.len(), 52);
         assert!(deck.is_empty());
@@ -196,8 +196,8 @@ mod tests {
         let mut cards2 = Vec::new();
 
         for _ in 0..52 {
-            cards1.push(deck1.draw().unwrap());
-            cards2.push(deck2.draw().unwrap());
+            cards1.push(deck1.draw_card().unwrap());
+            cards2.push(deck2.draw_card().unwrap());
         }
 
         let same_count = cards1
@@ -219,7 +219,7 @@ mod tests {
 
         let mut seen_cards = HashSet::new();
         for _ in 0..52 {
-            if let Some(card) = deck.draw() {
+            if let Some(card) = deck.draw_card() {
                 seen_cards.insert((card.suit as u8, card.rank as u8));
             }
         }
