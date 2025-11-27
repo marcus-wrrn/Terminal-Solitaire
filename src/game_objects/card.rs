@@ -185,6 +185,54 @@ impl Card {
             buf.set_string(center_x, center_y, pattern, style);
         }
     }
+
+    pub fn render_overlapped(&self, buf: &mut Buffer, x: u16, y: u16, overlap: u16) {
+        let visible_height = overlap;
+
+        if visible_height < 2 {
+            return;
+        }
+
+        let horizontal_count = Self::WIDTH.saturating_sub(2) as usize;
+        let horizontal = "─".repeat(horizontal_count);
+        
+
+        buf.set_string(x, y, &format!("┌{}┐", horizontal), Style::default());
+
+        if self.face_up {
+            let color = if self.suit.is_red() {
+                Color::Red
+            } else {
+                Color::White
+            };
+            let style = Style::default().fg(color);
+
+            let rank_str = format!("{}", self.rank);
+            let suit_str = format!("{}", self.suit);
+
+            if visible_height >= 2 && Self::WIDTH >= 3 {
+                buf.set_string(x + 1, y + 1, &rank_str, style);
+                buf.set_string(x + 2, y + 1, &suit_str, style);
+            }
+
+            for row in 1..visible_height {
+                buf.set_string(x, y + row, "│", Style::default());
+                buf.set_string(x + Self::WIDTH - 1, y + row, "│", Style::default());
+            }
+        } else {
+            let style = Style::default().fg(Color::Blue);
+
+            for row in 1..visible_height {
+                buf.set_string(x, y + row, "│", Style::default());
+                buf.set_string(x + Self::WIDTH - 1, y + row, "│", Style::default());
+            }
+
+            if visible_height >= 2 {
+                let pattern = "🂠";
+                buf.set_string(x + Self::WIDTH / 2, y + 1, pattern, style);
+            }
+        }
+    }
 }
 
 impl fmt::Display for Card {

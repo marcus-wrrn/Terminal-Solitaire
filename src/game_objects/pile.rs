@@ -89,6 +89,8 @@ impl Pile {
         }
     }
 
+    // ======== Rendering ========
+    
     pub fn render(&self, buf: &mut Buffer, x: u16, y: u16) {
         match self.pile_type {
             PileType::Tableau => self.render_tableau(buf, x, y),
@@ -113,7 +115,7 @@ impl Pile {
             if is_last_card {
                 card.render(buf, x, card_y);
             } else {
-                self.render_overlapped_card(buf, card, x, card_y, VERTICAL_OVERLAP);
+                card.render_overlapped(buf, x, card_y, VERTICAL_OVERLAP);
             }
         }
     }
@@ -162,53 +164,6 @@ impl Pile {
             }
 
             buf.set_string(area.x, area.y + area.height - 1, &format!("└{}┘", horizontal), Style::default().fg(Color::DarkGray));
-        }
-    }
-
-    fn render_overlapped_card(&self, buf: &mut Buffer, card: &Card, x: u16, y: u16, overlap: u16) {
-        let visible_height = overlap;
-
-        if visible_height < 2 {
-            return;
-        }
-
-        let horizontal_count = Card::WIDTH.saturating_sub(2) as usize;
-        let horizontal = "─".repeat(horizontal_count);
-
-        buf.set_string(x, y, &format!("┌{}┐", horizontal), Style::default());
-
-        if card.face_up {
-            let color = if card.suit.is_red() {
-                Color::Red
-            } else {
-                Color::White
-            };
-            let style = Style::default().fg(color);
-
-            let rank_str = format!("{}", card.rank);
-            let suit_str = format!("{}", card.suit);
-
-            if visible_height >= 2 && Card::WIDTH >= 3 {
-                buf.set_string(x + 1, y + 1, &rank_str, style);
-                buf.set_string(x + 2, y + 1, &suit_str, style);
-            }
-
-            for row in 1..visible_height {
-                buf.set_string(x, y + row, "│", Style::default());
-                buf.set_string(x + Card::WIDTH - 1, y + row, "│", Style::default());
-            }
-        } else {
-            let style = Style::default().fg(Color::Blue);
-
-            for row in 1..visible_height {
-                buf.set_string(x, y + row, "│", Style::default());
-                buf.set_string(x + Card::WIDTH - 1, y + row, "│", Style::default());
-            }
-
-            if visible_height >= 2 {
-                let pattern = "🂠";
-                buf.set_string(x + Card::WIDTH / 2, y + 1, pattern, style);
-            }
         }
     }
 }
