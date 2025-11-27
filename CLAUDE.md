@@ -14,6 +14,8 @@
 - `board.rs` - Board struct that contains all piles + cards needed for solitaire
 
 ### Rendering Module (`src/rendering`)
+- `board_renderer` - Renders the full board
+- `pile_renderer` - Renders cards in a pile
 - `card_renderer` - Renders single Card structs
 
 ## Dependencies (from Cargo.toml)
