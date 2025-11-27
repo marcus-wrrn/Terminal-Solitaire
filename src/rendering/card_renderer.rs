@@ -10,7 +10,6 @@ use ratatui::{
 pub struct CardRenderer;
 
 impl CardRenderer {
-    /// Card dimensions constants
     pub const WIDTH: u16 = 9;
     pub const HEIGHT: u16 = 7;
 
