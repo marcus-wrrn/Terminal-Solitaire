@@ -18,8 +18,14 @@
 - `pile_renderer` - Renders cards in a pile
 - `card_renderer` - Renders single Card structs
 
+### Control Module (`src/controller`)
+
 ## Dependencies (from Cargo.toml)
 
 - `ratatui` (v0.29.0) - Terminal UI library for building text-based user interfaces
 - `rand` (v0.8)
 - `crossterm` (v0.28)
+
+## Tool Usage
+
+Reference the ratatui documentation at https://ratatui.rs/ (high level tutorial) or https://docs.rs/ratatui/latest/ratatui/ (Rust Docs) when developing a new feature with no working examples in the project
