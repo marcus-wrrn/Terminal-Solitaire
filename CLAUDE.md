@@ -35,6 +35,9 @@ Orchestrates game state and manages game mechanics. Depends on game_objects but 
 - `controller.rs`   - Controller Structure
 - `key_bindings.rs` - Rebindable keybinds used by Controller
 
+### UI Module (`src/ui`)
+currently empty
+
 ## Dependencies (from Cargo.toml)
 
 - `ratatui` (v0.29.0) - Terminal UI library for building text-based user interfaces

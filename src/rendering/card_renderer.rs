@@ -44,53 +44,26 @@ impl CardRenderer {
             return;
         }
 
-        let horizontal_count = Self::WIDTH.saturating_sub(2) as usize;
+        let ((top_border, vertical, _), border_style) =
+            Self::get_border_chars(card.is_selected, Self::WIDTH);
 
-        let (top_left, top_right, horizontal, vertical) = if card.is_selected {
-            ("╔", "╗", "═".repeat(horizontal_count), "║")
-        } else {
-            ("┌", "┐", "─".repeat(horizontal_count), "│")
-        };
-
-        let border_style = if card.is_selected {
-            Style::default().fg(Color::Yellow)
-        } else {
-            Style::default()
-        };
-
-        buf.set_string(
-            x,
-            y,
-            &format!("{}{}{}", top_left, horizontal, top_right),
-            border_style,
-        );
+        buf.set_string(x, y, &top_border, border_style);
 
         if card.face_up {
-            let color = if card.suit.is_red() {
-                Color::Red
-            } else {
-                Color::White
-            };
-            let style = Style::default().fg(color);
-
-            let rank_str = format!("{}", card.rank);
-            let suit_str = format!("{}", card.suit);
-
             if visible_height >= 2 && Self::WIDTH >= 3 {
-                buf.set_string(x + 1, y + 1, &rank_str, style);
-                buf.set_string(x + 2, y + 1, &suit_str, style);
+                Self::render_label(card, buf, x + 1, y + 1);
             }
 
             for row in 1..visible_height {
-                buf.set_string(x, y + row, vertical, border_style);
-                buf.set_string(x + Self::WIDTH - 1, y + row, vertical, border_style);
+                buf.set_string(x, y + row, &vertical, border_style);
+                buf.set_string(x + Self::WIDTH - 1, y + row, &vertical, border_style);
             }
         } else {
             let style = Style::default().fg(Color::Blue);
 
             for row in 1..visible_height {
-                buf.set_string(x, y + row, vertical, border_style);
-                buf.set_string(x + Self::WIDTH - 1, y + row, vertical, border_style);
+                buf.set_string(x, y + row, &vertical, border_style);
+                buf.set_string(x + Self::WIDTH - 1, y + row, &vertical, border_style);
             }
 
             if visible_height >= 2 {
@@ -102,41 +75,20 @@ impl CardRenderer {
 
     /// Renders the border of a card
     fn render_border(buf: &mut Buffer, area: Rect, is_selected: bool) {
-        let horizontal_count = area.width.saturating_sub(2) as usize;
+        let ((top_border, vertical, bottom_border), border_style) =
+            Self::get_border_chars(is_selected, area.width);
 
-        let (top_left, top_right, bottom_left, bottom_right, horizontal, vertical) = if is_selected {
-            ("╔", "╗", "╚", "╝", "═".repeat(horizontal_count), "║")
-        } else {
-            ("┌", "┐", "└", "┘", "─".repeat(horizontal_count), "│")
-        };
-
-        let border_style = if is_selected {
-            Style::default().fg(Color::Yellow)
-        } else {
-            Style::default()
-        };
-
-        buf.set_string(
-            area.x,
-            area.y,
-            &format!("{}{}{}", top_left, horizontal, top_right),
-            border_style,
-        );
+        buf.set_string(area.x, area.y, &top_border, border_style);
 
         for y in 1..area.height.saturating_sub(1) {
-            buf.set_string(area.x, area.y + y, vertical, border_style);
-            buf.set_string(
-                area.x + area.width - 1,
-                area.y + y,
-                vertical,
-                border_style,
-            );
+            buf.set_string(area.x, area.y + y, &vertical, border_style);
+            buf.set_string(area.x + area.width - 1, area.y + y, &vertical, border_style);
         }
 
         buf.set_string(
             area.x,
             area.y + area.height - 1,
-            &format!("{}{}{}", bottom_left, horizontal, bottom_right),
+            &bottom_border,
             border_style,
         );
     }
@@ -150,13 +102,11 @@ impl CardRenderer {
         };
         let style = Style::default().fg(color);
 
-        let rank_str = format!("{}", card.rank);
         let suit_str = format!("{}", card.suit);
 
         // Top-left rank and suit
         if area.height >= 3 && area.width >= 3 {
-            buf.set_string(area.x + 1, area.y + 1, &rank_str, style);
-            buf.set_string(area.x + 2, area.y + 1, &suit_str, style);
+            Self::render_label(card, buf, area.x + 1, area.y + 1);
         }
 
         // Center suit symbol
@@ -169,9 +119,10 @@ impl CardRenderer {
         // Bottom-right rank and suit
         if area.height >= 3 && area.width >= 5 {
             let bottom_y = area.y + area.height - 2;
-            let bottom_x = area.x + area.width - 3;
-            buf.set_string(bottom_x, bottom_y, &rank_str, style);
-            buf.set_string(bottom_x + 1, bottom_y, &suit_str, style);
+            let rank_str = format!("{}", card.rank);
+            let rank_width = rank_str.len() as u16;
+            let bottom_x = area.x + area.width - 1 - rank_width - 1;
+            Self::render_label(card, buf, bottom_x, bottom_y);
         }
     }
 
@@ -185,5 +136,50 @@ impl CardRenderer {
             let center_x = area.x + area.width / 2;
             buf.set_string(center_x, center_y, pattern, style);
         }
+    }
+
+    /// Renders rank and suit label for a card at the specified position
+    /// Accommodates multi-character ranks (e.g., "10", "100")
+    fn render_label(card: &Card, buf: &mut Buffer, x: u16, y: u16) {
+        let color = if card.suit.is_red() {
+            Color::Red
+        } else {
+            Color::White
+        };
+        let style = Style::default().fg(color);
+
+        let rank_str = format!("{}", card.rank);
+        let suit_str = format!("{}", card.suit);
+        let rank_width = rank_str.len() as u16;
+
+        buf.set_string(x, y, &rank_str, style);
+        buf.set_string(x + rank_width, y, &suit_str, style);
+    }
+
+    /// Returns border characters and style based on selection state
+    fn get_border_chars(is_selected: bool, width: u16) -> ((String, String, String), Style) {
+        let horizontal_count = width.saturating_sub(2) as usize;
+
+        let chars = if is_selected {
+            (
+                format!("╔{}╗", "═".repeat(horizontal_count)),
+                "║".to_string(),
+                format!("╚{}╝", "═".repeat(horizontal_count)),
+            )
+        } else {
+            (
+                format!("┌{}┐", "─".repeat(horizontal_count)),
+                "│".to_string(),
+                format!("└{}┘", "─".repeat(horizontal_count)),
+            )
+        };
+
+        let style = if is_selected {
+            Style::default().fg(Color::Yellow)
+        } else {
+            Style::default()
+        };
+
+        (chars, style)
     }
 }

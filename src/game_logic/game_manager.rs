@@ -1,6 +1,6 @@
 use crate::game_objects::{PileType, Selection};
 use crate::game_logic::GameState;
-use crate::rendering::BoardRenderer;
+use crate::rendering::GameRenderer;
 use crate::controller::{Controller, GameAction};
 use ratatui::{DefaultTerminal, Frame};
 use std::io;
@@ -55,6 +55,31 @@ impl GameManager {
         Ok(())
     }
 
+    fn get_topmost_card_index(&self, pile_type: PileType, pile_index: usize) -> usize {
+        match pile_type {
+            PileType::Tableau => {
+                self.game_state.board()
+                    .get_tableau_pile(pile_index)
+                    .map(|p| if p.len() > 0 { p.len() - 1 } else { 0 })
+                    .unwrap_or(0)
+            }
+            PileType::Foundation => {
+                self.game_state.board()
+                    .get_foundation_pile(pile_index)
+                    .map(|p| if p.len() > 0 { p.len() - 1 } else { 0 })
+                    .unwrap_or(0)
+            }
+            PileType::Waste => {
+                let len = self.game_state.board().waste.len();
+                if len > 0 { len - 1 } else { 0 }
+            }
+            PileType::Stock => {
+                let len = self.game_state.board().stock.len();
+                if len > 0 { len - 1 } else { 0 }
+            }
+        }
+    }
+
     fn move_selection_left(&mut self) {
         let current = self.game_state.selection();
 
@@ -62,19 +87,7 @@ impl GameManager {
             PileType::Tableau => {
                 if current.pile_index > 0 {
                     let next_pile_index = current.pile_index - 1;
-                    let next_pile_len = self.game_state.board()
-                        .get_tableau_pile(next_pile_index)
-                        .map(|p| p.len())
-                        .unwrap_or(0);
-
-                    let card_index = if next_pile_len == 0 {
-                        0
-                    } else if next_pile_len <= current.card_index {
-                        next_pile_len - 1
-                    } else {
-                        current.card_index
-                    };
-
+                    let card_index = self.get_topmost_card_index(PileType::Tableau, next_pile_index);
                     self.game_state.set_selection(Selection::new(
                         PileType::Tableau,
                         next_pile_index,
@@ -84,24 +97,28 @@ impl GameManager {
             }
             PileType::Foundation => {
                 if current.pile_index > 0 {
+                    let next_pile_index = current.pile_index - 1;
+                    let card_index = self.get_topmost_card_index(PileType::Foundation, next_pile_index);
                     self.game_state.set_selection(Selection::new(
                         PileType::Foundation,
-                        current.pile_index - 1,
-                        0
+                        next_pile_index,
+                        card_index
                     ));
                 } else {
+                    let card_index = self.get_topmost_card_index(PileType::Waste, 0);
                     self.game_state.set_selection(Selection::new(
                         PileType::Waste,
                         0,
-                        0
+                        card_index
                     ));
                 }
             }
             PileType::Waste => {
+                let card_index = self.get_topmost_card_index(PileType::Stock, 0);
                 self.game_state.set_selection(Selection::new(
                     PileType::Stock,
                     0,
-                    0
+                    card_index
                 ));
             }
             PileType::Stock => {}
@@ -115,18 +132,7 @@ impl GameManager {
             PileType::Tableau => {
                 if current.pile_index < 6 {
                     let next_pile_index = current.pile_index + 1;
-                    let next_pile_len = self.game_state.board()
-                        .get_tableau_pile(next_pile_index)
-                        .map(|p| p.len())
-                        .unwrap_or(0);
-
-                    let card_index = if next_pile_len == 0 {
-                        0
-                    } else if next_pile_len <= current.card_index {
-                        next_pile_len - 1
-                    } else {
-                        current.card_index
-                    };
+                    let card_index = self.get_topmost_card_index(PileType::Tableau, next_pile_index);
 
                     self.game_state.set_selection(Selection::new(
                         PileType::Tableau,
@@ -137,25 +143,28 @@ impl GameManager {
             }
             PileType::Foundation => {
                 if current.pile_index < 3 {
+                    let card_index = self.get_topmost_card_index(PileType::Foundation, current.pile_index + 1);
                     self.game_state.set_selection(Selection::new(
                         PileType::Foundation,
                         current.pile_index + 1,
-                        0
+                        card_index
                     ));
                 }
             }
             PileType::Stock => {
+                let card_index = self.get_topmost_card_index(PileType::Waste, 0);
                 self.game_state.set_selection(Selection::new(
                     PileType::Waste,
                     0,
-                    0
+                    card_index
                 ));
             }
             PileType::Waste => {
+                let card_index = self.get_topmost_card_index(PileType::Foundation, 0);
                 self.game_state.set_selection(Selection::new(
                     PileType::Foundation,
                     0,
-                    0
+                    card_index
                 ));
             }
         }
@@ -174,16 +183,18 @@ impl GameManager {
                     ));
                 } else {
                     if current.pile_index < 4 {
+                        let card_index = self.get_topmost_card_index(PileType::Stock, 0);
                         self.game_state.set_selection(Selection::new(
                             PileType::Stock,
                             0,
-                            0
+                            card_index
                         ));
                     } else {
+                        let card_index = self.get_topmost_card_index(PileType::Foundation, 0);
                         self.game_state.set_selection(Selection::new(
                             PileType::Foundation,
                             0,
-                            0
+                            card_index
                         ));
                     }
                 }
@@ -251,8 +262,9 @@ impl GameManager {
     }
 
     pub fn draw(&self, frame: &mut Frame) {
-        let board_renderer = BoardRenderer::new(self.game_state.board());
-        frame.render_widget(board_renderer, frame.area());
+        let selection = self.game_state.selection();
+        let game_renderer = GameRenderer::new(self.game_state.board(), &selection);
+        frame.render_widget(game_renderer, frame.area());
     }
 }
 
