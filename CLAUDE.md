@@ -1,5 +1,9 @@
 # Solitaire Project Documentation
 
+## Dev notes
+
+Do not abuse comments
+
 ## Source Files
 
 ### Main Entry Point
