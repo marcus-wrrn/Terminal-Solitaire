@@ -7,15 +7,24 @@ Do not abuse comments
 ## Source Files
 
 ### Main Entry Point
-- `src/main.rs` - Entry point that initializes deck, piles, and tests basic game logic
-- `src/game_manager.rs` - Main Game object for controlling the state + mechanics of the game
+- `src/main.rs` - Entry point that initializes the game and starts the main loop
 
 ### Game Objects Module (`src/game_objects/`)
-- `mod.rs` - Module declaration file that re-exports Card, Deck, Pile, and related types
+Pure data structures representing game entities. This module has no dependencies on game logic.
+
+- `mod.rs` - Module declaration file that re-exports all game object types
 - `card.rs` - Defines Card struct with Suit and Rank enums, color checking, and display formatting
 - `deck.rs` - Standard n-card deck implementation with shuffle and draw functionality
 - `pile.rs` - Pile struct with placement rules for Tableau, Foundation, Stock, and Waste piles
-- `board.rs` - Board struct that contains all piles + cards needed for solitaire
+- `board.rs` - Board struct that contains all piles and cards for solitaire (pure data structure)
+- `selection.rs` - Selection struct representing a position on the board (pile type, pile index, card index)
+
+### Game Logic Module (`src/game_logic/`)
+Orchestrates game state and manages game mechanics. Depends on game_objects but not vice versa.
+
+- `mod.rs` - Module declaration file that re-exports GameState and GameManager
+- `game_state.rs` - GameState struct that holds the board and current selection, handles selection state updates
+- `game_manager.rs` - GameManager struct that runs the main game loop, processes input, and coordinates rendering
 
 ### Rendering Module (`src/rendering`)
 - `board_renderer.rs` - Renders the full board

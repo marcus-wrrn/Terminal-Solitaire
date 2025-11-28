@@ -1,5 +1,5 @@
 use super::KeyBindings;
-use ratatui::crossterm::event::{self, Event, KeyEvent, KeyEventKind, KeyCode};
+use ratatui::crossterm::event::{self, Event, KeyEvent, KeyEventKind};
 use std::io;
 
 /// Represents the different areas of focus on the game board

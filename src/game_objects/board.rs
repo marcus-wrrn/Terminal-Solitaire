@@ -1,4 +1,4 @@
-use crate::game_objects::{Card, Deck, Pile, PileType};
+use crate::game_objects::{Deck, Pile, PileType};
 
 pub struct Board {
     pub tableau: [Pile; 7],
@@ -70,24 +70,8 @@ impl Board {
         self.tableau.get(index)
     }
 
-    pub fn get_tableau_pile_mut(&mut self, index: usize) -> Option<&mut Pile> {
-        self.tableau.get_mut(index)
-    }
-
     pub fn get_foundation_pile(&self, index: usize) -> Option<&Pile> {
         self.foundation.get(index)
-    }
-
-    pub fn get_foundation_pile_mut(&mut self, index: usize) -> Option<&mut Pile> {
-        self.foundation.get_mut(index)
-    }
-
-    pub fn get_waste_top(&self) -> Option<&Card> {
-        self.waste.peek()
-    }
-
-    pub fn get_tableau_cards(&self, pile_index: usize) -> Option<&[Card]> {
-        self.tableau.get(pile_index).map(|pile| pile.cards.as_slice())
     }
 
     pub fn move_card_to_tableau(&mut self, from_pile: usize, to_pile: usize, card_index: usize) -> Result<(), &'static str> {

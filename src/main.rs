@@ -1,9 +1,9 @@
 mod game_objects;
-mod game_manager;
+mod game_logic;
 mod rendering;
 mod controller;
 
-use game_manager::GameManager;
+use game_logic::GameManager;
 use std::io;
 
 fn main() -> Result<(), io::Error> {

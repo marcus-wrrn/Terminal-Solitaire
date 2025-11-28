@@ -1,61 +1,9 @@
-use crate::game_objects::{Board, Deck, PileType};
+use crate::game_objects::{PileType, Selection};
+use crate::game_logic::GameState;
 use crate::rendering::BoardRenderer;
 use crate::controller::{Controller, GameAction};
 use ratatui::{DefaultTerminal, Frame};
 use std::io;
-
-/// Represents the currently selected position on the board
-#[derive(Debug, Clone, Copy, PartialEq, Eq)]
-pub struct Selection {
-    pub pile: PileType,
-    pub pile_index: usize,
-    pub card_index: usize,
-}
-
-impl Selection {
-    pub fn new(pile: PileType, pile_index: usize, card_index: usize) -> Self {
-        Self { pile, pile_index, card_index }
-    }
-}
-
-pub struct GameState {
-    board: Board,
-    selection: Selection,
-}
-
-impl GameState {
-    pub fn new() -> Self {
-        let mut deck = Deck::new();
-        deck.shuffle();
-
-        let mut board = Board::new();
-        board.setup(&mut deck);
-
-        Self {
-            board,
-            selection: Selection::new(PileType::Tableau, 0, 0),
-        }
-    }
-
-    pub fn board(&self) -> &Board {
-        &self.board
-    }
-
-    pub fn selection(&self) -> Selection {
-        self.selection
-    }
-
-    pub fn set_selection(&mut self, selection: Selection) {
-        self.selection = selection;
-        
-    }
-}
-
-impl Default for GameState {
-    fn default() -> Self {
-        Self::new()
-    }
-}
 
 pub struct GameManager {
     game_state: GameState,
@@ -81,8 +29,14 @@ impl GameManager {
                     GameAction::MoveRight => self.move_selection_right(),
                     GameAction::MoveUp => self.move_selection_up(),
                     GameAction::MoveDown => self.move_selection_down(),
+                    GameAction::Select | GameAction::Enter => {
+                        self.handle_select_action();
+                    }
+                    GameAction::Cancel => {
+                        self.game_state.cancel_pickup();
+                    }
                     GameAction::DrawStock => {
-                        // TODO: Implement stock draw logic
+                        let _ = self.game_state.draw_from_stock();
                     }
                     GameAction::Undo => {
                         // TODO: Implement undo logic
@@ -93,9 +47,7 @@ impl GameManager {
                     GameAction::Help => {
                         // TODO: Implement help display
                     }
-                    _ => {
-                        // Handle other actions
-                    }
+                    _ => {}
                 }
             }
         }
@@ -109,10 +61,24 @@ impl GameManager {
         match current.pile {
             PileType::Tableau => {
                 if current.pile_index > 0 {
+                    let next_pile_index = current.pile_index - 1;
+                    let next_pile_len = self.game_state.board()
+                        .get_tableau_pile(next_pile_index)
+                        .map(|p| p.len())
+                        .unwrap_or(0);
+
+                    let card_index = if next_pile_len == 0 {
+                        0
+                    } else if next_pile_len <= current.card_index {
+                        next_pile_len - 1
+                    } else {
+                        current.card_index
+                    };
+
                     self.game_state.set_selection(Selection::new(
                         PileType::Tableau,
-                        current.pile_index - 1,
-                        0
+                        next_pile_index,
+                        card_index
                     ));
                 }
             }
@@ -148,10 +114,24 @@ impl GameManager {
         match current.pile {
             PileType::Tableau => {
                 if current.pile_index < 6 {
+                    let next_pile_index = current.pile_index + 1;
+                    let next_pile_len = self.game_state.board()
+                        .get_tableau_pile(next_pile_index)
+                        .map(|p| p.len())
+                        .unwrap_or(0);
+
+                    let card_index = if next_pile_len == 0 {
+                        0
+                    } else if next_pile_len <= current.card_index {
+                        next_pile_len - 1
+                    } else {
+                        current.card_index
+                    };
+
                     self.game_state.set_selection(Selection::new(
                         PileType::Tableau,
-                        current.pile_index + 1,
-                        0
+                        next_pile_index,
+                        card_index
                     ));
                 }
             }
@@ -202,7 +182,7 @@ impl GameManager {
                     } else {
                         self.game_state.set_selection(Selection::new(
                             PileType::Foundation,
-                            current.pile_index - 4,
+                            0,
                             0
                         ));
                     }
@@ -259,6 +239,14 @@ impl GameManager {
                     0
                 ));
             }
+        }
+    }
+
+    fn handle_select_action(&mut self) {
+        if self.game_state.has_picked_up_cards() {
+            let _ = self.game_state.place_cards();
+        } else {
+            let _ = self.game_state.pick_up_cards();
         }
     }
 
