@@ -1,11 +1,8 @@
 use crate::game_objects::{Board, Deck};
 use crate::rendering::BoardRenderer;
-use ratatui::{
-    crossterm::event::{self, Event, KeyCode, KeyModifiers},
-    DefaultTerminal, Frame,
-};
+use crate::controller::{Controller, GameAction};
+use ratatui::{DefaultTerminal, Frame};
 use std::io;
-use std::time::Duration;
 
 pub struct GameState {
     board: Board,
@@ -27,10 +24,6 @@ impl GameState {
     pub fn board(&self) -> &Board {
         &self.board
     }
-
-    // pub fn board_mut(&mut self) -> &mut Board {
-    //     &mut self.board
-    // }
 }
 
 impl Default for GameState {
@@ -41,31 +34,38 @@ impl Default for GameState {
 
 pub struct GameManager {
     game_state: GameState,
+    controller: Controller,
 }
 
 impl GameManager {
     pub fn new() -> Self {
         Self {
             game_state: GameState::new(),
+            controller: Controller::new(),
         }
     }
 
-    // pub fn game_state(&self) -> &GameState {
-    //     &self.game_state
-    // }
-
-    // pub fn game_state_mut(&mut self) -> &mut GameState {
-    //     &mut self.game_state
-    // }
-
-    pub fn run(self, mut terminal: DefaultTerminal) -> Result<(), io::Error> {
+    pub fn run(mut self, mut terminal: DefaultTerminal) -> Result<(), io::Error> {
         loop {
             terminal.draw(|frame| self.draw(frame))?;
 
-            if event::poll(Duration::from_millis(100))? {
-                if let Event::Key(key) = event::read()? {
-                    if key.code == KeyCode::Char('c') && key.modifiers.contains(KeyModifiers::CONTROL) {
-                        break;
+            if let Some(action) = self.controller.poll_action()? {
+                match action {
+                    GameAction::Quit => break,
+                    GameAction::DrawStock => {
+                        // TODO: Implement stock draw logic
+                    }
+                    GameAction::Undo => {
+                        // TODO: Implement undo logic
+                    }
+                    GameAction::Restart => {
+                        // TODO: Implement restart logic
+                    }
+                    GameAction::Help => {
+                        // TODO: Implement help display
+                    }
+                    _ => {
+                        // Handle other actions
                     }
                 }
             }

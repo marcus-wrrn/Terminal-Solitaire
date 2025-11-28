@@ -35,7 +35,6 @@ impl Board {
         for i in 0..7 {
             for j in 0..=i {
                 if let Some(mut card) = deck.draw_card() {
-                    // Flip the top card of each pile
                     if j == i {
                         card.face_up = true;
                     }
@@ -112,7 +111,6 @@ impl Board {
             }
         }
 
-        // Perform the move
         let cards = self.tableau[from_pile].take_cards_from(card_index);
         self.tableau[to_pile].add_cards(cards);
 

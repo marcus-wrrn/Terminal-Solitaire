@@ -1,6 +1,7 @@
 mod game_objects;
 mod game_manager;
 mod rendering;
+mod controller;
 
 use game_manager::GameManager;
 use std::io;

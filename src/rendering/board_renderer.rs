@@ -7,6 +7,7 @@ use ratatui::{
     widgets::Widget,
 };
 
+/// Primary Rendering manager for the Solitair board
 pub struct BoardRenderer<'a> {
     board: &'a Board,
 }
@@ -67,7 +68,7 @@ impl<'a> Widget for BoardRenderer<'a> {
             Constraint::Length(CardRenderer::HEIGHT + 1),   // Stock/Waste/Foundation + labels
             Constraint::Length(2),                          // Spacing
             Constraint::Min(CardRenderer::HEIGHT + 1),      // Tableau (grows as needed)
-            Constraint::Length(1),                          // Instructions
+            // Constraint::Length(1),                          // Instructions
         ])
         .flex(Flex::Center)
         .split(area);
@@ -94,10 +95,7 @@ impl<'a> Widget for BoardRenderer<'a> {
         .flex(Flex::Center)
         .split(vertical_sections[2]);
 
-        // Render stock and waste piles
         self.render_stock_and_waste(buf, top_row_sections[0], top_row_sections[1]);
-
-        // Render foundation piles
         self.render_foundations(buf, &top_row_sections[3..7]);
 
         // Create horizontal layout for tableau row
@@ -116,13 +114,5 @@ impl<'a> Widget for BoardRenderer<'a> {
 
         // Render tableau piles
         self.render_tableau(buf, &tableau_sections);
-
-        // Render instructions
-        self.render_centered_text(
-            buf,
-            vertical_sections[5],
-            "Press Ctrl+C to quit",
-            Style::default().fg(Color::DarkGray),
-        );
     }
 }

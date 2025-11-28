@@ -79,6 +79,7 @@ pub struct Card {
     pub suit: Suit,
     pub rank: Rank,
     pub face_up: bool,
+    pub is_selected: bool,
 }
 
 impl Card {
@@ -87,11 +88,8 @@ impl Card {
             suit,
             rank,
             face_up: false,
+            is_selected: false,
         }
-    }
-
-    pub fn flip(&mut self) {
-        self.face_up = !self.face_up;
     }
 
     pub fn is_opposite_color(&self, other: &Card) -> bool {

@@ -14,11 +14,13 @@
 - `board.rs` - Board struct that contains all piles + cards needed for solitaire
 
 ### Rendering Module (`src/rendering`)
-- `board_renderer` - Renders the full board
-- `pile_renderer` - Renders cards in a pile
-- `card_renderer` - Renders single Card structs
+- `board_renderer.rs` - Renders the full board
+- `pile_renderer.rs` - Renders cards in a pile
+- `card_renderer.rs` - Renders single Card structs
 
-### Control Module (`src/controller`)
+### Controller Module (`src/controller`)
+- `controller.rs`   - Controller Structure
+- `key_bindings.rs` - Rebindable keybinds used by Controller
 
 ## Dependencies (from Cargo.toml)
 

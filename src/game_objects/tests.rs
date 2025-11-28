@@ -14,18 +14,6 @@ mod tests {
     }
 
     #[test]
-    fn test_card_flip() {
-        let mut card = Card::new(Suit::Spades, Rank::King);
-        assert!(!card.face_up);
-
-        card.flip();
-        assert!(card.face_up);
-
-        card.flip();
-        assert!(!card.face_up);
-    }
-
-    #[test]
     fn test_card_is_opposite_color() {
         let red_card = Card::new(Suit::Hearts, Rank::Five);
         let black_card = Card::new(Suit::Spades, Rank::Four);
@@ -74,13 +62,6 @@ mod tests {
         assert_eq!(Rank::Jack.value(), 11);
         assert_eq!(Rank::Queen.value(), 12);
         assert_eq!(Rank::King.value(), 13);
-    }
-
-    #[test]
-    fn test_card_display_face_up() {
-        let mut card = Card::new(Suit::Hearts, Rank::Ace);
-        card.flip();
-        assert_eq!(format!("{}", card), "A♥");
     }
 
     #[test]
