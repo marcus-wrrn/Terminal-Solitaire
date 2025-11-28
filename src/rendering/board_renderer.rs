@@ -1,5 +1,6 @@
 use crate::game_objects::{Board, Selection};
 use crate::rendering::{card_renderer::CardRenderer, pile_renderer::PileRenderer};
+use crate::ui::DebugLog;
 use ratatui::{
     buffer::Buffer,
     layout::{Constraint, Flex, Layout, Rect},
@@ -7,13 +8,20 @@ use ratatui::{
 };
 
 /// Renderer for the solitaire board (stock, waste, foundation, and tableau piles)
-pub struct BoardRenderer;
+pub struct BoardRenderer<'a> {
+    debug_log: &'a DebugLog,
+    pile_renderer: &'a PileRenderer<'a>,
+}
 
-impl BoardRenderer {
+impl<'a> BoardRenderer<'a> {
     const HORIZONTAL_SPACING: u16 = 2;
 
+    pub fn new(debug_log: &'a DebugLog, pile_renderer: &'a PileRenderer<'a>) -> Self {
+        Self { debug_log, pile_renderer }
+    }
+
     /// Renders the complete board within the specified area
-    pub fn render(board: &Board, selection: &Selection, buf: &mut Buffer, area: Rect) {
+    pub fn render(&self, board: &Board, selection: &Selection, buf: &mut Buffer, area: Rect) {
         let vertical_sections = Layout::vertical([
             Constraint::Length(CardRenderer::HEIGHT + 1),   // Stock/Waste/Foundation + labels
             Constraint::Length(2),                          // Spacing
@@ -35,8 +43,8 @@ impl BoardRenderer {
         .flex(Flex::Center)
         .split(vertical_sections[0]);
 
-        Self::render_stock_and_waste(board, selection, buf, top_row_sections[0], top_row_sections[1]);
-        Self::render_foundations(board, selection, buf, &top_row_sections[3..7]);
+        self.render_stock_and_waste(board, selection, buf, top_row_sections[0], top_row_sections[1]);
+        self.render_foundations(board, selection, buf, &top_row_sections[3..7]);
 
         let tableau_sections = Layout::horizontal([
             Constraint::Length(CardRenderer::WIDTH),
@@ -51,36 +59,36 @@ impl BoardRenderer {
         .flex(Flex::Center)
         .split(vertical_sections[2]);
 
-        Self::render_tableau(board, selection, buf, &tableau_sections);
+        self.render_tableau(board, selection, buf, &tableau_sections);
     }
 
-    fn render_pile_label(buf: &mut Buffer, area: Rect, label: &str) {
+    fn render_pile_label(&self, buf: &mut Buffer, area: Rect, label: &str) {
         buf.set_string(area.x, area.y, label, Style::default().fg(Color::Gray));
     }
 
-    fn render_stock_and_waste(board: &Board, selection: &Selection, buf: &mut Buffer, stock_area: Rect, waste_area: Rect) {
-        Self::render_pile_label(buf, stock_area, "Stock");
+    fn render_stock_and_waste(&self, board: &Board, selection: &Selection, buf: &mut Buffer, stock_area: Rect, waste_area: Rect) {
+        self.render_pile_label(buf, stock_area, "Stock");
         let stock_pile_area = Rect { x: stock_area.x, y: stock_area.y + 1, ..stock_area };
-        PileRenderer::render(&board.stock, 0, selection, buf, stock_pile_area);
+        self.pile_renderer.render(&board.stock, 0, selection, buf, stock_pile_area);
 
-        Self::render_pile_label(buf, waste_area, "Waste");
+        self.render_pile_label(buf, waste_area, "Waste");
         let waste_pile_area = Rect { x: waste_area.x, y: waste_area.y + 1, ..waste_area };
-        PileRenderer::render(&board.waste, 0, selection, buf, waste_pile_area);
+        self.pile_renderer.render(&board.waste, 0, selection, buf, waste_pile_area);
     }
 
-    fn render_foundations(board: &Board, selection: &Selection, buf: &mut Buffer, foundation_areas: &[Rect]) {
+    fn render_foundations(&self, board: &Board, selection: &Selection, buf: &mut Buffer, foundation_areas: &[Rect]) {
         for (i, (pile, area)) in board.foundation.iter().zip(foundation_areas).enumerate() {
-            Self::render_pile_label(buf, *area, &format!("F{}", i + 1));
+            self.render_pile_label(buf, *area, &format!("F{}", i + 1));
             let pile_area = Rect { x: area.x, y: area.y + 1, ..*area };
-            PileRenderer::render(pile, i, selection, buf, pile_area);
+            self.pile_renderer.render(pile, i, selection, buf, pile_area);
         }
     }
 
-    fn render_tableau(board: &Board, selection: &Selection, buf: &mut Buffer, tableau_areas: &[Rect]) {
+    fn render_tableau(&self, board: &Board, selection: &Selection, buf: &mut Buffer, tableau_areas: &[Rect]) {
         for (i, (pile, area)) in board.tableau.iter().zip(tableau_areas).enumerate() {
-            Self::render_pile_label(buf, *area, &format!("T{}", i + 1));
+            self.render_pile_label(buf, *area, &format!("T{}", i + 1));
             let pile_area = Rect { x: area.x, y: area.y + 1, ..*area };
-            PileRenderer::render(pile, i, selection, buf, pile_area);
+            self.pile_renderer.render(pile, i, selection, buf, pile_area);
         }
     }
 }

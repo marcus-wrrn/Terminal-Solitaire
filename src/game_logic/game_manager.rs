@@ -1,13 +1,15 @@
 use crate::game_objects::{PileType, Selection};
 use crate::game_logic::GameState;
-use crate::rendering::GameRenderer;
+use crate::rendering::{GameRenderer, BoardRenderer, PileRenderer, CardRenderer};
 use crate::controller::{Controller, GameAction};
+use crate::ui::DebugLog;
 use ratatui::{DefaultTerminal, Frame};
 use std::io;
 
 pub struct GameManager {
     game_state: GameState,
     controller: Controller,
+    debug_log: DebugLog,
 }
 
 impl GameManager {
@@ -15,7 +17,12 @@ impl GameManager {
         Self {
             game_state: GameState::new(),
             controller: Controller::new(),
+            debug_log: DebugLog::default(),
         }
+    }
+
+    pub fn debug_log(&mut self) -> &mut DebugLog {
+        &mut self.debug_log
     }
 
     pub fn run(mut self, mut terminal: DefaultTerminal) -> Result<(), io::Error> {
@@ -263,7 +270,17 @@ impl GameManager {
 
     pub fn draw(&self, frame: &mut Frame) {
         let selection = self.game_state.selection();
-        let game_renderer = GameRenderer::new(self.game_state.board(), &selection);
+
+        let card_renderer = CardRenderer::new(&self.debug_log);
+        let pile_renderer = PileRenderer::new(&self.debug_log, &card_renderer);
+        let board_renderer = BoardRenderer::new(&self.debug_log, &pile_renderer);
+        let game_renderer = GameRenderer::new(
+            self.game_state.board(),
+            &selection,
+            &self.debug_log,
+            &board_renderer
+        );
+
         frame.render_widget(game_renderer, frame.area());
     }
 }

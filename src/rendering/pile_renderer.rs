@@ -1,5 +1,6 @@
 use crate::game_objects::{Pile, PileType, Selection};
 use crate::rendering::card_renderer::CardRenderer;
+use crate::ui::DebugLog;
 use ratatui::{
     buffer::Buffer,
     layout::Rect,
@@ -8,27 +9,34 @@ use ratatui::{
 
 /// Renderer for Pile objects
 /// Handles rendering of different pile types and delegates card rendering to CardRenderer
-pub struct PileRenderer;
+pub struct PileRenderer<'a> {
+    debug_log: &'a DebugLog,
+    card_renderer: &'a CardRenderer<'a>,
+}
 
-impl PileRenderer {
+impl<'a> PileRenderer<'a> {
     /// Vertical overlap distance for tableau cards
     pub const VERTICAL_OVERLAP: u16 = 2;
 
-    pub fn render(pile: &Pile, pile_index: usize, current_selection: &Selection, buf: &mut Buffer, area: Rect) {
+    pub fn new(debug_log: &'a DebugLog, card_renderer: &'a CardRenderer<'a>) -> Self {
+        Self { debug_log, card_renderer }
+    }
+
+    pub fn render(&self, pile: &Pile, pile_index: usize, current_selection: &Selection, buf: &mut Buffer, area: Rect) {
         let is_pile_selected = current_selection.pile == pile.pile_type
                             && current_selection.pile_index == pile_index;
 
         match pile.pile_type {
-            PileType::Tableau => Self::render_tableau(pile, is_pile_selected, buf, area),
-            PileType::Foundation => Self::render_foundation(pile, is_pile_selected, buf, area),
-            PileType::Stock => Self::render_stock(pile, is_pile_selected, buf, area),
-            PileType::Waste => Self::render_waste(pile, is_pile_selected, buf, area),
+            PileType::Tableau => self.render_tableau(pile, is_pile_selected, buf, area),
+            PileType::Foundation => self.render_foundation(pile, is_pile_selected, buf, area),
+            PileType::Stock => self.render_stock(pile, is_pile_selected, buf, area),
+            PileType::Waste => self.render_waste(pile, is_pile_selected, buf, area),
         }
     }
 
-    fn render_tableau(pile: &Pile, is_pile_selected: bool, buf: &mut Buffer, area: Rect) {
+    fn render_tableau(&self, pile: &Pile, is_pile_selected: bool, buf: &mut Buffer, area: Rect) {
         if pile.is_empty() {
-            Self::render_empty_pile(buf, area, is_pile_selected);
+            self.render_empty_pile(buf, area, is_pile_selected);
             return;
         }
 
@@ -37,38 +45,38 @@ impl PileRenderer {
             let is_last_card = idx == pile.cards.len() - 1;
 
             if is_last_card {
-                CardRenderer::render(card, buf, area.x, card_y);
+                self.card_renderer.render(card, buf, area.x, card_y);
             } else {
-                CardRenderer::render_overlapped(card, buf, area.x, card_y, Self::VERTICAL_OVERLAP);
+                self.card_renderer.render_overlapped(card, buf, area.x, card_y, Self::VERTICAL_OVERLAP);
             }
         }
     }
 
-    fn render_foundation(pile: &Pile, is_pile_selected: bool, buf: &mut Buffer, area: Rect) {
+    fn render_foundation(&self, pile: &Pile, is_pile_selected: bool, buf: &mut Buffer, area: Rect) {
         if pile.is_empty() {
-            Self::render_empty_pile(buf, area, is_pile_selected);
+            self.render_empty_pile(buf, area, is_pile_selected);
         } else if let Some(card) = pile.peek() {
-            CardRenderer::render(card, buf, area.x, area.y);
+            self.card_renderer.render(card, buf, area.x, area.y);
         }
     }
 
-    fn render_stock(pile: &Pile, is_pile_selected: bool, buf: &mut Buffer, area: Rect) {
+    fn render_stock(&self, pile: &Pile, is_pile_selected: bool, buf: &mut Buffer, area: Rect) {
         if pile.is_empty() {
-            Self::render_empty_pile(buf, area, is_pile_selected);
+            self.render_empty_pile(buf, area, is_pile_selected);
         } else if let Some(card) = pile.peek() {
-            CardRenderer::render(card, buf, area.x, area.y);
+            self.card_renderer.render(card, buf, area.x, area.y);
         }
     }
 
-    fn render_waste(pile: &Pile, is_pile_selected: bool, buf: &mut Buffer, area: Rect) {
+    fn render_waste(&self, pile: &Pile, is_pile_selected: bool, buf: &mut Buffer, area: Rect) {
         if pile.is_empty() {
-            Self::render_empty_pile(buf, area, is_pile_selected);
+            self.render_empty_pile(buf, area, is_pile_selected);
         } else if let Some(card) = pile.peek() {
-            CardRenderer::render(card, buf, area.x, area.y);
+            self.card_renderer.render(card, buf, area.x, area.y);
         }
     }
 
-    fn render_empty_pile(buf: &mut Buffer, area: Rect, is_selected: bool) {
+    fn render_empty_pile(&self, buf: &mut Buffer, area: Rect, is_selected: bool) {
         let card_area = Rect {
             x: area.x,
             y: area.y,

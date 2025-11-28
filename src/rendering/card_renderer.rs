@@ -1,4 +1,5 @@
 use crate::game_objects::Card;
+use crate::ui::DebugLog;
 use ratatui::{
     buffer::Buffer,
     layout::Rect,
@@ -7,14 +8,20 @@ use ratatui::{
 
 /// Renderer for individual Card objects
 /// Handles all visual presentation of cards without modifying game state
-pub struct CardRenderer;
+pub struct CardRenderer<'a> {
+    debug_log: &'a DebugLog,
+}
 
-impl CardRenderer {
+impl<'a> CardRenderer<'a> {
     pub const WIDTH: u16 = 9;
     pub const HEIGHT: u16 = 7;
 
+    pub fn new(debug_log: &'a DebugLog) -> Self {
+        Self { debug_log }
+    }
+
     /// Renders a complete card at the specified position
-    pub fn render(card: &Card, buf: &mut Buffer, x: u16, y: u16) {
+    pub fn render(&self, card: &Card, buf: &mut Buffer, x: u16, y: u16) {
         let card_area = Rect {
             x,
             y,
@@ -26,18 +33,18 @@ impl CardRenderer {
             return;
         }
 
-        Self::render_border(buf, card_area, card.is_selected);
+        self.render_border(buf, card_area, card.is_selected);
 
         if card.face_up {
-            Self::render_face_up(card, buf, card_area);
+            self.render_face_up(card, buf, card_area);
         } else {
-            Self::render_face_down(buf, card_area);
+            self.render_face_down(buf, card_area);
         }
     }
 
     /// Renders a card that is overlapped by another card (shows only partial top)
     /// Used for tableau piles where cards overlap vertically
-    pub fn render_overlapped(card: &Card, buf: &mut Buffer, x: u16, y: u16, overlap: u16) {
+    pub fn render_overlapped(&self, card: &Card, buf: &mut Buffer, x: u16, y: u16, overlap: u16) {
         let visible_height = overlap;
 
         if visible_height < 2 {
@@ -51,7 +58,7 @@ impl CardRenderer {
 
         if card.face_up {
             if visible_height >= 2 && Self::WIDTH >= 3 {
-                Self::render_label(card, buf, x + 1, y + 1);
+                self.render_label(card, buf, x + 1, y + 1);
             }
 
             for row in 1..visible_height {
@@ -74,7 +81,7 @@ impl CardRenderer {
     }
 
     /// Renders the border of a card
-    fn render_border(buf: &mut Buffer, area: Rect, is_selected: bool) {
+    fn render_border(&self, buf: &mut Buffer, area: Rect, is_selected: bool) {
         let ((top_border, vertical, bottom_border), border_style) =
             Self::get_border_chars(is_selected, area.width);
 
@@ -94,7 +101,7 @@ impl CardRenderer {
     }
 
     /// Renders a face-up card with rank and suit visible
-    fn render_face_up(card: &Card, buf: &mut Buffer, area: Rect) {
+    fn render_face_up(&self, card: &Card, buf: &mut Buffer, area: Rect) {
         let color = if card.suit.is_red() {
             Color::Red
         } else {
@@ -106,7 +113,7 @@ impl CardRenderer {
 
         // Top-left rank and suit
         if area.height >= 3 && area.width >= 3 {
-            Self::render_label(card, buf, area.x + 1, area.y + 1);
+            self.render_label(card, buf, area.x + 1, area.y + 1);
         }
 
         // Center suit symbol
@@ -122,12 +129,12 @@ impl CardRenderer {
             let rank_str = format!("{}", card.rank);
             let rank_width = rank_str.len() as u16;
             let bottom_x = area.x + area.width - 1 - rank_width - 1;
-            Self::render_label(card, buf, bottom_x, bottom_y);
+            self.render_label(card, buf, bottom_x, bottom_y);
         }
     }
 
     /// Renders a face-down card with card back pattern
-    fn render_face_down(buf: &mut Buffer, area: Rect) {
+    fn render_face_down(&self, buf: &mut Buffer, area: Rect) {
         let style = Style::default().fg(Color::Blue);
 
         if area.height >= 3 && area.width >= 3 {
@@ -140,7 +147,7 @@ impl CardRenderer {
 
     /// Renders rank and suit label for a card at the specified position
     /// Accommodates multi-character ranks (e.g., "10", "100")
-    fn render_label(card: &Card, buf: &mut Buffer, x: u16, y: u16) {
+    fn render_label(&self, card: &Card, buf: &mut Buffer, x: u16, y: u16) {
         let color = if card.suit.is_red() {
             Color::Red
         } else {
