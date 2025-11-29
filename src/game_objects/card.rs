@@ -12,10 +12,6 @@ impl Suit {
     pub fn is_red(&self) -> bool {
         matches!(self, Suit::Hearts | Suit::Diamonds)
     }
-
-    pub fn is_black(&self) -> bool {
-        !self.is_red()
-    }
 }
 
 impl fmt::Display for Suit {

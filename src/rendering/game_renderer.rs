@@ -11,8 +11,9 @@ use ratatui::{
 pub struct GameRenderer<'a> {
     board: &'a Board,
     selection: &'a Selection,
+    hover_selection: Option<&'a Selection>,
     debug_log: &'a DebugLog,
-    board_renderer: &'a BoardRenderer<'a>,
+    board_renderer: &'a mut BoardRenderer,
 }
 
 impl<'a> GameRenderer<'a> {
@@ -20,9 +21,31 @@ impl<'a> GameRenderer<'a> {
         board: &'a Board,
         selection: &'a Selection,
         debug_log: &'a DebugLog,
-        board_renderer: &'a BoardRenderer<'a>
+        board_renderer: &'a mut BoardRenderer
     ) -> Self {
-        Self { board, selection, debug_log, board_renderer }
+        Self {
+            board,
+            selection,
+            hover_selection: None,
+            debug_log,
+            board_renderer,
+        }
+    }
+
+    pub fn with_hover(
+        board: &'a Board,
+        selection: &'a Selection,
+        hover_selection: Option<&'a Selection>,
+        debug_log: &'a DebugLog,
+        board_renderer: &'a mut BoardRenderer
+    ) -> Self {
+        Self {
+            board,
+            selection,
+            hover_selection,
+            debug_log,
+            board_renderer,
+        }
     }
 
     fn render_centered_text(&self, buf: &mut Buffer, area: Rect, text: &str, style: Style) {
@@ -52,7 +75,7 @@ impl<'a> Widget for GameRenderer<'a> {
             Style::default().fg(Color::Yellow),
         );
 
-        self.board_renderer.render(self.board, self.selection, buf, vertical_sections[2]);
+        self.board_renderer.render(self.board, self.selection, self.hover_selection, buf, vertical_sections[2]);
 
         self.debug_log.render(vertical_sections[3], buf);
     }

@@ -167,10 +167,6 @@ impl Board {
             Err("Failed to move card")
         }
     }
-
-    pub fn is_game_won(&self) -> bool {
-        self.foundation.iter().all(|pile| pile.len() == 13)
-    }
 }
 
 impl Default for Board {

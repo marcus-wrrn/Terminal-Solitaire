@@ -1,13 +1,17 @@
 use crate::game_objects::{Board, Deck, PileType, Selection};
+use crate::ui::DebugLog;
+use std::rc::Rc;
+use std::cell::RefCell;
 
 pub struct GameState {
     board: Board,
     selection: Selection,
     picked_up: Option<Selection>,
+    debug_log: Rc<RefCell<DebugLog>>
 }
 
 impl GameState {
-    pub fn new() -> Self {
+    pub fn new(debug_log: Rc<RefCell<DebugLog>>) -> Self {
         let mut deck = Deck::new();
         deck.shuffle();
 
@@ -18,9 +22,10 @@ impl GameState {
             board,
             selection: Selection::new(PileType::Tableau, 0, 0),
             picked_up: None,
+            debug_log
         };
 
-        state.update_card_selection_flags();
+        state.select_card(state.selection);
         state
     }
 
@@ -34,17 +39,14 @@ impl GameState {
 
     pub fn set_selection(&mut self, selection: Selection) {
         let old_selection = self.selection;
+        self.debug_log.borrow_mut().log(&format!(
+            "Selection changed from {:?}[{}][{}] to {:?}[{}][{}]",
+            old_selection.pile, old_selection.pile_index, old_selection.card_index,
+            selection.pile, selection.pile_index, selection.card_index
+        ));
         self.selection = selection;
-        self.update_selection_change(old_selection, selection);
-    }
-
-    fn update_selection_change(&mut self, old_selection: Selection, new_selection: Selection) {
         self.deselect_card(old_selection);
-        self.select_card(new_selection);
-    }
-
-    fn update_card_selection_flags(&mut self) {
-        self.select_card(self.selection);
+        self.select_card(selection);
     }
 
     fn deselect_card(&mut self, selection: Selection) {
@@ -220,11 +222,5 @@ impl GameState {
                 Ok(())
             }
         }
-    }
-}
-
-impl Default for GameState {
-    fn default() -> Self {
-        Self::new()
     }
 }

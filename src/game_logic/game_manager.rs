@@ -1,28 +1,31 @@
 use crate::game_objects::{PileType, Selection};
 use crate::game_logic::GameState;
-use crate::rendering::{GameRenderer, BoardRenderer, PileRenderer, CardRenderer};
+use crate::rendering::{GameRenderer, BoardRenderer};
 use crate::controller::{Controller, GameAction};
 use crate::ui::DebugLog;
 use ratatui::{DefaultTerminal, Frame};
 use std::io;
+use std::rc::Rc;
+use std::cell::RefCell;
 
 pub struct GameManager {
     game_state: GameState,
     controller: Controller,
-    debug_log: DebugLog,
+    debug_log: Rc<RefCell<DebugLog>>,
+    board_renderer: BoardRenderer,
+    hover_selection: Option<Selection>,
 }
 
 impl GameManager {
     pub fn new() -> Self {
+        let debug_log = Rc::new(RefCell::new(DebugLog::default()));
         Self {
-            game_state: GameState::new(),
+            game_state: GameState::new(Rc::clone(&debug_log)),
             controller: Controller::new(),
-            debug_log: DebugLog::default(),
+            debug_log,
+            board_renderer: BoardRenderer::new(),
+            hover_selection: None,
         }
-    }
-
-    pub fn debug_log(&mut self) -> &mut DebugLog {
-        &mut self.debug_log
     }
 
     pub fn run(mut self, mut terminal: DefaultTerminal) -> Result<(), io::Error> {
@@ -53,6 +56,19 @@ impl GameManager {
                     }
                     GameAction::Help => {
                         // TODO: Implement help display
+                    }
+                    GameAction::StartDrag(x, y) => {
+                        self.handle_start_drag(x, y);
+                    }
+                    GameAction::UpdateDrag(x, y) => {
+                        self.handle_update_drag(x, y);
+                    }
+                    GameAction::CompleteDrag(x, y) => {
+                        self.handle_complete_drag(x, y);
+                    }
+                    GameAction::CancelDrag => {
+                        self.game_state.cancel_pickup();
+                        self.hover_selection = None;
                     }
                     _ => {}
                 }
@@ -268,25 +284,42 @@ impl GameManager {
         }
     }
 
-    pub fn draw(&self, frame: &mut Frame) {
+    pub fn draw(&mut self, frame: &mut Frame) {
         let selection = self.game_state.selection();
-
-        let card_renderer = CardRenderer::new(&self.debug_log);
-        let pile_renderer = PileRenderer::new(&self.debug_log, &card_renderer);
-        let board_renderer = BoardRenderer::new(&self.debug_log, &pile_renderer);
-        let game_renderer = GameRenderer::new(
+        let debug_log_ref = self.debug_log.borrow();
+        let game_renderer = GameRenderer::with_hover(
             self.game_state.board(),
             &selection,
-            &self.debug_log,
-            &board_renderer
+            self.hover_selection.as_ref(),
+            &*debug_log_ref,
+            &mut self.board_renderer
         );
 
         frame.render_widget(game_renderer, frame.area());
     }
-}
 
-impl Default for GameManager {
-    fn default() -> Self {
-        Self::new()
+    fn handle_start_drag(&mut self, x: u16, y: u16) {
+        if let Some(selection) = self.board_renderer.coordinate_to_selection(self.game_state.board(), x, y) {
+            self.game_state.set_selection(selection);
+            let _ = self.game_state.pick_up_cards();
+        }
+    }
+
+    fn handle_update_drag(&mut self, x: u16, y: u16) {
+        if self.game_state.has_picked_up_cards() {
+            self.hover_selection = self.board_renderer.coordinate_to_selection(self.game_state.board(), x, y);
+        }
+    }
+
+    fn handle_complete_drag(&mut self, x: u16, y: u16) {
+        if self.game_state.has_picked_up_cards() {
+            if let Some(target) = self.board_renderer.coordinate_to_selection(self.game_state.board(), x, y) {
+                self.game_state.set_selection(target);
+                let _ = self.game_state.place_cards();
+            } else {
+                self.game_state.cancel_pickup();
+            }
+        }
+        self.hover_selection = None;
     }
 }

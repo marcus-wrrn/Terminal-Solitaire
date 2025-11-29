@@ -1,5 +1,4 @@
 use crate::game_objects::Card;
-use crate::ui::DebugLog;
 use ratatui::{
     buffer::Buffer,
     layout::Rect,
@@ -8,16 +7,16 @@ use ratatui::{
 
 /// Renderer for individual Card objects
 /// Handles all visual presentation of cards without modifying game state
-pub struct CardRenderer<'a> {
-    debug_log: &'a DebugLog,
+pub struct CardRenderer {
+    // debug_log: &'a DebugLog,
 }
 
-impl<'a> CardRenderer<'a> {
+impl CardRenderer {
     pub const WIDTH: u16 = 9;
     pub const HEIGHT: u16 = 7;
 
-    pub fn new(debug_log: &'a DebugLog) -> Self {
-        Self { debug_log }
+    pub fn new() -> Self {
+        Self { }
     }
 
     /// Renders a complete card at the specified position

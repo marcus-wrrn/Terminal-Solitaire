@@ -42,25 +42,25 @@ impl Deck {
         self.cards.pop()
     }
 
-    pub fn draw_multiple_cards(&mut self, count: usize) -> Vec<Card> {
-        let mut drawn = Vec::new();
-        for _ in 0..count {
-            if let Some(card) = self.draw_card() {
-                drawn.push(card);
-            } else {
-                break;
-            }
-        }
-        drawn
-    }
+    // pub fn draw_multiple_cards(&mut self, count: usize) -> Vec<Card> {
+    //     let mut drawn = Vec::new();
+    //     for _ in 0..count {
+    //         if let Some(card) = self.draw_card() {
+    //             drawn.push(card);
+    //         } else {
+    //             break;
+    //         }
+    //     }
+    //     drawn
+    // }
 
-    pub fn is_empty(&self) -> bool {
-        self.cards.is_empty()
-    }
+    // pub fn is_empty(&self) -> bool {
+    //     self.cards.is_empty()
+    // }
 
-    pub fn len(&self) -> usize {
-        self.cards.len()
-    }
+    // pub fn len(&self) -> usize {
+    //     self.cards.len()
+    // }
 }
 
 impl Default for Deck {
