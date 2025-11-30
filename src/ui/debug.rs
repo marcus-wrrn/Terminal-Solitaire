@@ -3,7 +3,7 @@ use ratatui::{
     layout::Rect,
     style::{Color, Style},
     text::{Line, Text},
-    widgets::{Block, Borders, Paragraph, Widget},
+    widgets::{Block, Borders, Clear, Paragraph, Widget},
 };
 
 pub struct DebugLog {
@@ -28,6 +28,7 @@ impl DebugLog {
     }
 
     pub fn render(&self, area: Rect, buf: &mut Buffer) {
+        Clear.render(area, buf);
         let lines: Vec<Line> = self
             .messages
             .iter()

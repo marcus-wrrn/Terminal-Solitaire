@@ -75,7 +75,6 @@ pub struct Card {
     pub suit: Suit,
     pub rank: Rank,
     pub face_up: bool,
-    pub is_selected: bool,
 }
 
 impl Card {
@@ -84,7 +83,6 @@ impl Card {
             suit,
             rank,
             face_up: false,
-            is_selected: false,
         }
     }
 

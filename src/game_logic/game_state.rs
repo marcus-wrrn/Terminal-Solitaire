@@ -1,32 +1,24 @@
 use crate::game_objects::{Board, Deck, PileType, Selection};
-use crate::ui::DebugLog;
-use std::rc::Rc;
-use std::cell::RefCell;
 
 pub struct GameState {
     board: Board,
     selection: Selection,
     picked_up: Option<Selection>,
-    debug_log: Rc<RefCell<DebugLog>>
 }
 
 impl GameState {
-    pub fn new(debug_log: Rc<RefCell<DebugLog>>) -> Self {
+    pub fn new() -> Self {
         let mut deck = Deck::new();
         deck.shuffle();
 
         let mut board = Board::new();
         board.setup(&mut deck);
 
-        let mut state = Self {
+        Self {
             board,
             selection: Selection::new(PileType::Tableau, 0, 0),
             picked_up: None,
-            debug_log
-        };
-
-        state.select_card(state.selection);
-        state
+        }
     }
 
     pub fn board(&self) -> &Board {
@@ -38,73 +30,7 @@ impl GameState {
     }
 
     pub fn set_selection(&mut self, selection: Selection) {
-        let old_selection = self.selection;
-        self.debug_log.borrow_mut().log(&format!(
-            "Selection changed from {:?}[{}][{}] to {:?}[{}][{}]",
-            old_selection.pile, old_selection.pile_index, old_selection.card_index,
-            selection.pile, selection.pile_index, selection.card_index
-        ));
         self.selection = selection;
-        self.deselect_card(old_selection);
-        self.select_card(selection);
-    }
-
-    fn deselect_card(&mut self, selection: Selection) {
-        match selection.pile {
-            PileType::Tableau => {
-                if let Some(pile) = self.board.tableau.get_mut(selection.pile_index) {
-                    if let Some(card) = pile.cards.get_mut(selection.card_index) {
-                        card.is_selected = false;
-                    }
-                }
-            }
-            PileType::Foundation => {
-                if let Some(pile) = self.board.foundation.get_mut(selection.pile_index) {
-                    if let Some(card) = pile.cards.get_mut(selection.card_index) {
-                        card.is_selected = false;
-                    }
-                }
-            }
-            PileType::Waste => {
-                if let Some(card) = self.board.waste.cards.get_mut(selection.card_index) {
-                    card.is_selected = false;
-                }
-            }
-            PileType::Stock => {
-                if let Some(card) = self.board.stock.cards.get_mut(selection.card_index) {
-                    card.is_selected = false;
-                }
-            }
-        }
-    }
-
-    fn select_card(&mut self, selection: Selection) {
-        match selection.pile {
-            PileType::Tableau => {
-                if let Some(pile) = self.board.tableau.get_mut(selection.pile_index) {
-                    if let Some(card) = pile.cards.get_mut(selection.card_index) {
-                        card.is_selected = true;
-                    }
-                }
-            }
-            PileType::Foundation => {
-                if let Some(pile) = self.board.foundation.get_mut(selection.pile_index) {
-                    if let Some(card) = pile.cards.get_mut(selection.card_index) {
-                        card.is_selected = true;
-                    }
-                }
-            }
-            PileType::Waste => {
-                if let Some(card) = self.board.waste.cards.get_mut(selection.card_index) {
-                    card.is_selected = true;
-                }
-            }
-            PileType::Stock => {
-                if let Some(card) = self.board.stock.cards.get_mut(selection.card_index) {
-                    card.is_selected = true;
-                }
-            }
-        }
     }
 
     pub fn pick_up_cards(&mut self) -> Result<(), &'static str> {

@@ -75,28 +75,28 @@ impl Default for KeyBindings {
     }
 }
 
-impl KeyBindings {
-    // /// Builder method to set the quit key
-    // pub fn with_quit(mut self, key: KeyCode) -> Self {
-    //     self.quit = key;
-    //     self
-    // }
+// impl KeyBindings {
+//     // /// Builder method to set the quit key
+//     // pub fn with_quit(mut self, key: KeyCode) -> Self {
+//     //     self.quit = key;
+//     //     self
+//     // }
 
-    // /// Builder method to set the select key
-    // pub fn with_select(mut self, key: KeyCode) -> Self {
-    //     self.select = key;
-    //     self
-    // }
+//     // /// Builder method to set the select key
+//     // pub fn with_select(mut self, key: KeyCode) -> Self {
+//     //     self.select = key;
+//     //     self
+//     // }
 
-    // /// Builder method to set the enter key
-    // pub fn with_enter(mut self, key: KeyCode) -> Self {
-    //     self.enter = key;
-    //     self
-    // }
+//     // /// Builder method to set the enter key
+//     // pub fn with_enter(mut self, key: KeyCode) -> Self {
+//     //     self.enter = key;
+//     //     self
+//     // }
 
-    // /// Builder method to set the cancel key
-    // pub fn with_cancel(mut self, key: KeyCode) -> Self {
-    //     self.cancel = key;
-    //     self
-    // }
-}
+//     // /// Builder method to set the cancel key
+//     // pub fn with_cancel(mut self, key: KeyCode) -> Self {
+//     //     self.cancel = key;
+//     //     self
+//     // }
+// }

@@ -20,21 +20,6 @@ impl<'a> GameRenderer<'a> {
     pub fn new(
         board: &'a Board,
         selection: &'a Selection,
-        debug_log: &'a DebugLog,
-        board_renderer: &'a mut BoardRenderer
-    ) -> Self {
-        Self {
-            board,
-            selection,
-            hover_selection: None,
-            debug_log,
-            board_renderer,
-        }
-    }
-
-    pub fn with_hover(
-        board: &'a Board,
-        selection: &'a Selection,
         hover_selection: Option<&'a Selection>,
         debug_log: &'a DebugLog,
         board_renderer: &'a mut BoardRenderer
@@ -63,7 +48,7 @@ impl<'a> Widget for GameRenderer<'a> {
             Constraint::Length(1),  // Title
             Constraint::Length(1),  // Spacing
             Constraint::Min(0),     // Board area (grows as needed)
-            Constraint::Length(12), // Debug log area
+            Constraint::Length(8), // Debug log area
         ])
         .flex(Flex::Center)
         .split(area);

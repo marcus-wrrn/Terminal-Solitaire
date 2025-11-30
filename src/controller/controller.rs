@@ -2,6 +2,13 @@ use super::KeyBindings;
 use ratatui::crossterm::event::{self, Event, KeyEvent, KeyEventKind, MouseButton, MouseEventKind};
 use std::io;
 
+/// Represents the input mode for the controller
+#[derive(Debug, Clone, Copy, PartialEq, Eq)]
+pub enum ControlMode {
+    Keyboard,
+    Mouse,
+}
+
 /// Represents the different areas of focus on the game board
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
 pub enum FocusArea {
@@ -23,7 +30,7 @@ pub struct DragState {
 }
 
 /// Represents actions the player can take in the game
-#[derive(Debug, Clone, PartialEq, Eq)]
+#[derive(Debug, Clone, Copy, PartialEq, Eq)]
 pub enum GameAction {
     /// Quit the game
     Quit,
@@ -94,6 +101,7 @@ pub struct Controller {
     key_bindings: KeyBindings,
     current_focus: FocusArea,
     drag_state: Option<DragState>,
+    control_mode: ControlMode,
 }
 
 impl Controller {
@@ -103,6 +111,7 @@ impl Controller {
             key_bindings: KeyBindings::default(),
             current_focus: FocusArea::Tableau,
             drag_state: None,
+            control_mode: ControlMode::Keyboard,
         }
     }
 
@@ -112,6 +121,7 @@ impl Controller {
             key_bindings,
             current_focus: FocusArea::Tableau,
             drag_state: None,
+            control_mode: ControlMode::Keyboard,
         }
     }
 
@@ -140,61 +150,23 @@ impl Controller {
         self.drag_state.is_some()
     }
 
+    pub fn control_mode(&self) -> ControlMode {
+        self.control_mode
+    }
+
     pub fn poll_action(&mut self) -> io::Result<Option<GameAction>> {
         if event::poll(std::time::Duration::from_millis(100))? {
             match event::read()? {
                 Event::Key(key) => {
                     if key.kind == KeyEventKind::Press {
                         let action = self.map_key_to_action(key);
-                        match action {
-                            GameAction::FocusTableau => self.current_focus = FocusArea::Tableau,
-                            GameAction::FocusFoundation => self.current_focus = FocusArea::Foundation,
-                            GameAction::FocusStock => self.current_focus = FocusArea::Stock,
-                            GameAction::FocusWaste => self.current_focus = FocusArea::Waste,
-                            GameAction::Cancel => {
-                                if self.drag_state.is_some() {
-                                    self.drag_state = None;
-                                    return Ok(Some(GameAction::CancelDrag));
-                                }
-                            }
-                            _ => {}
-                        }
-
+                        self.handle_key_action(action.clone());
                         return Ok(Some(action));
                     }
                 }
                 Event::Mouse(mouse) => {
-                    match mouse.kind {
-                        MouseEventKind::Down(MouseButton::Left) => {
-                            self.drag_state = Some(DragState {
-                                start_x: mouse.column,
-                                start_y: mouse.row,
-                                current_x: mouse.column,
-                                current_y: mouse.row,
-                            });
-                            return Ok(Some(GameAction::StartDrag(mouse.column, mouse.row)));
-                        }
-                        MouseEventKind::Drag(MouseButton::Left) => {
-                            if let Some(ref mut drag) = self.drag_state {
-                                drag.current_x = mouse.column;
-                                drag.current_y = mouse.row;
-                                return Ok(Some(GameAction::UpdateDrag(mouse.column, mouse.row)));
-                            }
-                        }
-                        MouseEventKind::Up(MouseButton::Left) => {
-                            if self.drag_state.is_some() {
-                                self.drag_state = None;
-                                return Ok(Some(GameAction::CompleteDrag(mouse.column, mouse.row)));
-                            }
-                        }
-                        MouseEventKind::Down(MouseButton::Right) => {
-                            if self.drag_state.is_some() {
-                                self.drag_state = None;
-                                return Ok(Some(GameAction::CancelDrag));
-                            }
-                        }
-                        _ => {}
-                    }
+                    let action = self.handle_mouse_action(mouse);
+                    return Ok(action);
                 }
                 _ => {}
             }
@@ -208,17 +180,71 @@ impl Controller {
             if let Event::Key(key) = event::read()? {
                 if key.kind == KeyEventKind::Press {
                     let action = self.map_key_to_action(key);
-                    match action {
-                        GameAction::FocusTableau => self.current_focus = FocusArea::Tableau,
-                        GameAction::FocusFoundation => self.current_focus = FocusArea::Foundation,
-                        GameAction::FocusStock => self.current_focus = FocusArea::Stock,
-                        GameAction::FocusWaste => self.current_focus = FocusArea::Waste,
-                        _ => {}
-                    }
-
+                    self.handle_key_action(action.clone());
                     return Ok(action);
                 }
             }
+        }
+    }
+
+    fn handle_key_action(&mut self, action: GameAction) {
+        match action {
+            GameAction::MoveLeft | GameAction::MoveRight |
+            GameAction::MoveUp | GameAction::MoveDown => {
+                self.control_mode = ControlMode::Keyboard;
+            }
+            GameAction::FocusTableau => self.current_focus = FocusArea::Tableau,
+            GameAction::FocusFoundation => self.current_focus = FocusArea::Foundation,
+            GameAction::FocusStock => self.current_focus = FocusArea::Stock,
+            GameAction::FocusWaste => self.current_focus = FocusArea::Waste,
+            GameAction::Cancel => {
+                if self.drag_state.is_some() {
+                    self.drag_state = None;
+                }
+            }
+            _ => {}
+        }
+    }
+
+    fn handle_mouse_action(&mut self, mouse: event::MouseEvent) -> Option<GameAction> {
+        self.control_mode = ControlMode::Mouse;
+
+        match mouse.kind {
+            MouseEventKind::Down(MouseButton::Left) => {
+                self.drag_state = Some(DragState {
+                    start_x: mouse.column,
+                    start_y: mouse.row,
+                    current_x: mouse.column,
+                    current_y: mouse.row,
+                });
+                Some(GameAction::StartDrag(mouse.column, mouse.row))
+            }
+            MouseEventKind::Drag(MouseButton::Left) => {
+                if let Some(ref mut drag) = self.drag_state {
+                    drag.current_x = mouse.column;
+                    drag.current_y = mouse.row;
+                    Some(GameAction::UpdateDrag(mouse.column, mouse.row))
+                } else {
+                    None
+                }
+            }
+            MouseEventKind::Up(MouseButton::Left) => {
+                if self.drag_state.is_some() {
+                    self.drag_state = None;
+                    Some(GameAction::CompleteDrag(mouse.column, mouse.row))
+                } else {
+                    None
+                }
+            }
+            MouseEventKind::Down(MouseButton::Right) => {
+                if self.drag_state.is_some() {
+                    self.drag_state = None;
+                    Some(GameAction::CancelDrag)
+                } else {
+                    None
+                }
+            }
+            _ => None,
         }
     }
 

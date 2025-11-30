@@ -1,4 +1,4 @@
-use crate::game_objects::{Deck, Pile, PileType};
+use crate::game_objects::{Deck, Pile, PileType, Card};
 
 pub struct Board {
     pub tableau: [Pile; 7],
@@ -167,6 +167,15 @@ impl Board {
             Err("Failed to move card")
         }
     }
+
+    pub fn get_all_cards(&self) -> Vec<&Card> {
+      self.tableau.iter()
+          .chain(self.foundation.iter())
+          .chain(std::iter::once(&self.stock))
+          .chain(std::iter::once(&self.waste))
+          .flat_map(|pile| pile.cards.iter())
+          .collect()
+  }
 }
 
 impl Default for Board {

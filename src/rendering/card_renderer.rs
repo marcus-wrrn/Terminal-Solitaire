@@ -20,7 +20,7 @@ impl CardRenderer {
     }
 
     /// Renders a complete card at the specified position
-    pub fn render(&self, card: &Card, buf: &mut Buffer, x: u16, y: u16) {
+    pub fn render(&self, card: &Card, is_selected: bool, buf: &mut Buffer, x: u16, y: u16) {
         let card_area = Rect {
             x,
             y,
@@ -32,7 +32,7 @@ impl CardRenderer {
             return;
         }
 
-        self.render_border(buf, card_area, card.is_selected);
+        self.render_border(buf, card_area, is_selected);
 
         if card.face_up {
             self.render_face_up(card, buf, card_area);
@@ -43,7 +43,7 @@ impl CardRenderer {
 
     /// Renders a card that is overlapped by another card (shows only partial top)
     /// Used for tableau piles where cards overlap vertically
-    pub fn render_overlapped(&self, card: &Card, buf: &mut Buffer, x: u16, y: u16, overlap: u16) {
+    pub fn render_overlapped(&self, card: &Card, is_selected: bool, buf: &mut Buffer, x: u16, y: u16, overlap: u16) {
         let visible_height = overlap;
 
         if visible_height < 2 {
@@ -51,7 +51,7 @@ impl CardRenderer {
         }
 
         let ((top_border, vertical, _), border_style) =
-            Self::get_border_chars(card.is_selected, Self::WIDTH);
+            Self::get_border_chars(is_selected, Self::WIDTH);
 
         buf.set_string(x, y, &top_border, border_style);
 
