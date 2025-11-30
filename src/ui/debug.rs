@@ -27,6 +27,10 @@ impl DebugLog {
         }
     }
 
+    pub fn clear(&mut self) {
+        self.messages.clear();
+    }
+
     pub fn render(&self, area: Rect, buf: &mut Buffer) {
         Clear.render(area, buf);
         let lines: Vec<Line> = self

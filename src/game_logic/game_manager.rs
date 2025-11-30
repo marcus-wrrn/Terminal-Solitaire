@@ -2,7 +2,7 @@ use crate::game_objects::Selection;
 use crate::game_logic::{GameState, SelectionNavigator};
 use crate::rendering::{GameRenderer, BoardRenderer};
 use crate::controller::{Controller, GameAction};
-use crate::ui::{DebugLog, OptionsMenu};
+use crate::ui::{DebugLog, OptionsMenu, WinPopup};
 use ratatui::{DefaultTerminal, Frame};
 use std::io;
 // use std::rc::Rc;
@@ -15,10 +15,21 @@ pub struct GameManager {
     board_renderer: BoardRenderer,
     hover_selection: Option<Selection>,
     options_menu: OptionsMenu,
+    win_popup: WinPopup,
 }
 
 impl GameManager {
     pub fn new() -> Self {
+        let mut win_popup = WinPopup::new_with_title("Congratulations!!".to_string());
+        win_popup.add_line(ratatui::text::Line::from(vec![
+            ratatui::text::Span::styled(
+                "YOU WON!",
+                ratatui::style::Style::default()
+                    .fg(ratatui::style::Color::Green)
+                    .add_modifier(ratatui::style::Modifier::BOLD),
+            ),
+        ]));
+
         Self {
             game_state: GameState::new(),
             controller: Controller::new(),
@@ -26,15 +37,31 @@ impl GameManager {
             board_renderer: BoardRenderer::new(),
             hover_selection: None,
             options_menu: OptionsMenu::new(),
+            win_popup,
         }
     }
 
     pub fn run(mut self, mut terminal: DefaultTerminal) -> Result<(), io::Error> {
         loop {
             terminal.draw(|frame| self.draw(frame))?;
+            
+            if (self.game_state.has_won() || self.game_state.all_tableau_cards_face_up()) && !self.win_popup.is_visible() {
+                self.win_popup.show();
+            }
 
             if let Some(action) = self.controller.poll_action()? {
-                if self.options_menu.is_visible() {
+                if self.win_popup.is_visible() {
+                    match action {
+                        GameAction::Quit => break,
+                        GameAction::Restart => {
+                            self.game_state = GameState::new();
+                            self.debug_log.clear();
+                            self.hover_selection = None;
+                            self.win_popup.hide();
+                        }
+                        _ => {}
+                    }
+                } else if self.options_menu.is_visible() {
                     match action {
                         GameAction::Quit | GameAction::Cancel | GameAction::Help => {
                             self.options_menu.hide();
@@ -81,6 +108,7 @@ impl GameManager {
                         }
                         GameAction::Restart => {
                             self.game_state = GameState::new();
+                            self.debug_log.clear();
                             self.hover_selection = None;
                         }
                         GameAction::Help => {
@@ -110,9 +138,13 @@ impl GameManager {
 
     fn handle_select_action(&mut self) {
         if self.game_state.has_picked_up_cards() {
-            let _ = self.game_state.place_cards();
+            if let Err(msg) = self.game_state.place_cards() {
+                self.debug_log.log(format!("{}", msg));
+            }
         } else {
-            let _ = self.game_state.pick_up_cards();
+            if let Err(msg) = self.game_state.pick_up_cards() {
+                self.debug_log.log(format!("{}", msg));
+            }
         }
     }
 
@@ -136,9 +168,9 @@ impl GameManager {
                 if let Err(val) = self.game_state.place_cards() {
                     self.debug_log.log(format!("{}", val));
                 }
-            } else {
-                self.game_state.cancel_pickup();
-            }
+                
+            } 
+            self.game_state.cancel_pickup();
         }
         self.hover_selection = None;
     }
@@ -157,6 +189,10 @@ impl GameManager {
 
         if self.options_menu.is_visible() {
             self.options_menu.render(frame.area(), frame.buffer_mut());
+        }
+
+        if self.win_popup.is_visible() {
+            self.win_popup.render(frame.area(), frame.buffer_mut());
         }
     }
 }

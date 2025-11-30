@@ -149,4 +149,14 @@ impl GameState {
             }
         }
     }
+
+    pub fn has_won(&self) -> bool {
+        self.board.foundation.iter().all(|pile| pile.len() == 13)
+    }
+
+    pub fn all_tableau_cards_face_up(&self) -> bool {
+        self.board.tableau.iter().all(|pile| {
+            pile.cards.iter().all(|card| card.face_up)
+        })
+    }
 }
