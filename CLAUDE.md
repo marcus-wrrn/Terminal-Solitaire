@@ -10,7 +10,7 @@ Do not abuse comments
 - `src/main.rs` - Entry point that initializes the game and starts the main loop
 
 ### Game Objects Module (`src/game_objects/`)
-Pure data structures representing game entities. This module has no dependencies on game logic.
+Pure data structures representing game entities. This module has no dependencies on game logic or rendering.
 
 - `mod.rs` - Module declaration file that re-exports all game object types
 - `card.rs` - Defines Card struct with Suit and Rank enums, color checking, and display formatting
@@ -28,20 +28,23 @@ Orchestrates game state and manages game mechanics. Depends on game_objects but 
 - `game_manager.rs` - GameManager struct that runs the main game loop, processes input, and coordinates rendering
 
 ### Rendering Module (`src/rendering`)
+Rendering Pipeline GameRenderer->BoardRenderer->PileRenderer->CardRenderer
+
 - `mod.rs` - Module declaration file that re-exports GameRenderer and BoardRenderer
 - `game_renderer.rs` - Main game renderer that coordinates title, board, and debug log display
 - `board_renderer.rs` - Renders the full board
-- `pile_renderer.rs` - Renders cards in a pile
-- `card_renderer.rs` - Renders single Card structs
+- `pile_renderer.rs` - Renders cards, determines if card to be rendered is selected
+- `card_renderer.rs` - Renders single Card
 
 ### Controller Module (`src/controller`)
 - `mod.rs` - Module declaration file that re-exports KeyBindings, Controller, and GameAction
-- `controller.rs` - Controller struct that handles user input and maps to GameActions
+- `controller.rs` - Controller struct that handles user input (both mouse + keyboard) and maps to GameActions
 - `key_bindings.rs` - Rebindable keybinds used by Controller
 
 ### UI Module (`src/ui`)
 - `mod.rs` - Module declaration file that re-exports DebugLog
 - `debug.rs` - DebugLog component for displaying debug messages in the UI
+- `win_popup.rs` - Popup window with configurable content
 
 ## Dependencies (from Cargo.toml)
 

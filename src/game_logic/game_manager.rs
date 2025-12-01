@@ -1,12 +1,10 @@
 use crate::game_objects::Selection;
-use crate::game_logic::{GameState, SelectionNavigator};
+use crate::game_logic::{GameState, SelectionNavigator, AnimationManager};
 use crate::rendering::{GameRenderer, BoardRenderer};
 use crate::controller::{Controller, GameAction};
 use crate::ui::{DebugLog, OptionsMenu, WinPopup};
 use ratatui::{DefaultTerminal, Frame};
 use std::io;
-// use std::rc::Rc;
-// use std::cell::RefCell;
 
 pub struct GameManager {
     game_state: GameState,
@@ -16,6 +14,7 @@ pub struct GameManager {
     hover_selection: Option<Selection>,
     options_menu: OptionsMenu,
     win_popup: WinPopup,
+    animation_manager: AnimationManager,
 }
 
 impl GameManager {
@@ -38,14 +37,28 @@ impl GameManager {
             hover_selection: None,
             options_menu: OptionsMenu::new(),
             win_popup,
+            animation_manager: AnimationManager::new(),
         }
     }
 
     pub fn run(mut self, mut terminal: DefaultTerminal) -> Result<(), io::Error> {
         loop {
             terminal.draw(|frame| self.draw(frame))?;
-            
-            if (self.game_state.has_won() || self.game_state.all_tableau_cards_face_up()) && !self.win_popup.is_visible() {
+
+            if (self.game_state.has_won() || self.game_state.all_tableau_cards_face_up()) && !self.win_popup.is_visible() && !self.animation_manager.is_active() {
+                self.animation_manager.start_animation();
+            }
+
+            if self.animation_manager.is_active() {
+                let board = self.game_state.board_mut();
+                if let Err(msg) = self.animation_manager.win_animation(board) {
+                    if msg == "No valid moves available" {
+                        self.debug_log.log(format!("Animation stopped: {}", msg));
+                    }
+                }
+            }
+
+            if self.game_state.has_won() && !self.win_popup.is_visible() {
                 self.win_popup.show();
             }
 
@@ -58,6 +71,7 @@ impl GameManager {
                             self.debug_log.clear();
                             self.hover_selection = None;
                             self.win_popup.hide();
+                            self.animation_manager.stop_animation();
                         }
                         _ => {}
                     }
@@ -110,6 +124,7 @@ impl GameManager {
                             self.game_state = GameState::new();
                             self.debug_log.clear();
                             self.hover_selection = None;
+                            self.animation_manager.stop_animation();
                         }
                         GameAction::Help => {
                             self.options_menu.toggle();

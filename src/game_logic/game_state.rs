@@ -25,6 +25,10 @@ impl GameState {
         &self.board
     }
 
+    pub fn board_mut(&mut self) -> &mut Board {
+        &mut self.board
+    }
+
     pub fn selection(&self) -> Selection {
         self.selection
     }

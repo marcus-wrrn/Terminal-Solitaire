@@ -95,18 +95,18 @@ impl WinPopup {
             lines.push(Line::from(""));
         }
 
-        lines.push(Line::from(vec![
-            Span::styled(
-                "Press R to restart",
-                Style::default().fg(Color::White),
-            ),
-        ]));
-        lines.push(Line::from(vec![
-            Span::styled(
-                "Press Q to quit",
-                Style::default().fg(Color::White),
-            ),
-        ]));
+        // lines.push(Line::from(vec![
+        //     Span::styled(
+        //         "Press R to restart",
+        //         Style::default().fg(Color::White),
+        //     ),
+        // ]));
+        // lines.push(Line::from(vec![
+        //     Span::styled(
+        //         "Press Q to quit",
+        //         Style::default().fg(Color::White),
+        //     ),
+        // ]));
 
         let paragraph = Paragraph::new(lines)
             .block(

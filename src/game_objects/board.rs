@@ -168,6 +168,25 @@ impl Board {
         }
     }
 
+    pub fn move_stock_to_foundation(&mut self, foundation_index: usize) -> Result<(), &'static str> {
+        if foundation_index >= 4 {
+            return Err("Invalid foundation index");
+        }
+
+        for i in 0..self.stock.cards.len() {
+            let mut card = self.stock.cards[i].clone();
+            card.face_up = true;
+
+            if self.foundation[foundation_index].can_place_card(&card) {
+                self.stock.cards.remove(i);
+                self.foundation[foundation_index].push(card);
+                return Ok(());
+            }
+        }
+
+        Err("No valid card in stock for this foundation")
+    }
+
     // pub fn get_all_cards(&self) -> Vec<&Card> {
     //   self.tableau.iter()
     //       .chain(self.foundation.iter())
