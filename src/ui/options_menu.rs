@@ -10,6 +10,7 @@ use ratatui::{
 pub enum MenuOption {
     Restart,
     RebindKeys,
+    DeveloperMode,
     Help,
 }
 
@@ -19,6 +20,7 @@ impl MenuOption {
             MenuOption::Restart,
             MenuOption::RebindKeys,
             MenuOption::Help,
+            MenuOption::DeveloperMode,
         ]
     }
 
@@ -26,6 +28,7 @@ impl MenuOption {
         match self {
             MenuOption::Restart => "Restart Game",
             MenuOption::RebindKeys => "Rebind Keys",
+            MenuOption::DeveloperMode => "Developer Mode",
             MenuOption::Help => "Help",
         }
     }

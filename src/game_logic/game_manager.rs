@@ -1,7 +1,7 @@
-use crate::game_logic::{GameState, SelectionNavigator, AnimationManager, HoverState};
+use crate::game_logic::{GameState, SelectionNavigator, AnimationManager, HoverState, MenuManager, MenuAction};
 use crate::rendering::{GameRenderer, BoardRenderer};
 use crate::controller::{Controller, GameAction};
-use crate::ui::{DebugLog, OptionsMenu, WinPopup};
+use crate::ui::{DebugLog, WinPopup, MenuOption};
 use ratatui::{DefaultTerminal, Frame};
 use std::io;
 
@@ -11,7 +11,7 @@ pub struct GameManager {
     debug_log: DebugLog,
     board_renderer: BoardRenderer,
     hover_state: HoverState,
-    options_menu: OptionsMenu,
+    menu_manager: MenuManager,
     win_popup: WinPopup,
     animation_manager: AnimationManager,
 }
@@ -34,7 +34,7 @@ impl GameManager {
             debug_log: DebugLog::default(),
             board_renderer: BoardRenderer::new(),
             hover_state: HoverState::None,
-            options_menu: OptionsMenu::new(),
+            menu_manager: MenuManager::new(),
             win_popup,
             animation_manager: AnimationManager::new(),
         }
@@ -74,20 +74,9 @@ impl GameManager {
                         }
                         _ => {}
                     }
-                } else if self.options_menu.is_visible() {
-                    match action {
-                        GameAction::Quit | GameAction::Cancel | GameAction::Help => {
-                            self.options_menu.hide();
-                        }
-                        GameAction::MoveUp => {
-                            self.options_menu.move_up();
-                        }
-                        GameAction::MoveDown => {
-                            self.options_menu.move_down();
-                        }
-                        GameAction::Select | GameAction::Enter => {
-                        }
-                        _ => {}
+                } else if self.menu_manager.is_menu_active() {
+                    if let Some(menu_action) = self.menu_manager.handle_menu_action(action) {
+                        self.handle_menu_action(menu_action);
                     }
                 } else {
                     match action {
@@ -126,7 +115,7 @@ impl GameManager {
                             self.animation_manager.stop_animation();
                         }
                         GameAction::Help => {
-                            self.options_menu.toggle();
+                            self.menu_manager.toggle_options_menu();
                         }
                         GameAction::StartDrag(x, y) => {
                             self.handle_start_drag(x, y);
@@ -200,6 +189,29 @@ impl GameManager {
         self.hover_state = HoverState::None;
     }
 
+    fn handle_menu_action(&mut self, menu_action: MenuAction) {
+        match menu_action {
+            MenuAction::OptionSelected(option) => {
+                match option {
+                    MenuOption::Restart => {
+                        self.game_state = GameState::new();
+                        self.debug_log.clear();
+                        self.hover_state = HoverState::None;
+                        self.animation_manager.stop_animation();
+                        self.win_popup.hide();
+                    }
+                    MenuOption::RebindKeys => {
+                    }
+                    MenuOption::DeveloperMode => {
+                    }
+                    MenuOption::Help => {
+                    }
+                }
+            }
+            _ => {}
+        }
+    }
+
     pub fn draw(&mut self, frame: &mut Frame) {
         let selection = self.game_state.selection();
         let game_renderer = GameRenderer::new(
@@ -212,9 +224,7 @@ impl GameManager {
 
         frame.render_widget(game_renderer, frame.area());
 
-        if self.options_menu.is_visible() {
-            self.options_menu.render(frame.area(), frame.buffer_mut());
-        }
+        self.menu_manager.render(frame.area(), frame.buffer_mut());
 
         if self.win_popup.is_visible() {
             self.win_popup.render(frame.area(), frame.buffer_mut());
