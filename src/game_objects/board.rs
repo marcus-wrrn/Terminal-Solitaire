@@ -38,21 +38,21 @@ impl Board {
                     if j == i {
                         card.face_up = true;
                     }
-                    self.tableau[i].push(card);
+                    self.tableau[i].add_card(card);
                 }
             }
         }
 
         // Remaining cards go to stock
         while let Some(card) = deck.draw_card() {
-            self.stock.push(card);
+            self.stock.add_card(card);
         }
     }
 
     pub fn draw_from_stock(&mut self) -> bool {
         if let Some(mut card) = self.stock.pop() {
             card.face_up = true;
-            self.waste.push(card);
+            self.waste.add_card(card);
             true
         } else {
             false
@@ -62,7 +62,7 @@ impl Board {
     pub fn reset_stock(&mut self) {
         while let Some(mut card) = self.waste.pop() {
             card.face_up = false;
-            self.stock.push(card);
+            self.stock.add_card(card);
         }
     }
 
@@ -118,7 +118,7 @@ impl Board {
         }
 
         if let Some(card) = self.tableau[from_tableau].pop() {
-            self.foundation[foundation_index].push(card);
+            self.foundation[foundation_index].add_card(card);
             self.tableau[from_tableau].flip_top_card();
             Ok(())
         } else {
@@ -140,7 +140,7 @@ impl Board {
         }
 
         if let Some(card) = self.waste.pop() {
-            self.tableau[tableau_index].push(card);
+            self.tableau[tableau_index].add_card(card);
             Ok(())
         } else {
             Err("Failed to move card")
@@ -161,7 +161,7 @@ impl Board {
         }
 
         if let Some(card) = self.waste.pop() {
-            self.foundation[foundation_index].push(card);
+            self.foundation[foundation_index].add_card(card);
             Ok(())
         } else {
             Err("Failed to move card")
@@ -179,7 +179,7 @@ impl Board {
 
             if self.foundation[foundation_index].can_place_card(&card) {
                 self.stock.cards.remove(i);
-                self.foundation[foundation_index].push(card);
+                self.foundation[foundation_index].add_card(card);
                 return Ok(());
             }
         }

@@ -1,4 +1,5 @@
 use crate::game_objects::{Board, Selection};
+use crate::game_logic::HoverState;
 use crate::ui::DebugLog;
 use super::board_renderer::BoardRenderer;
 use ratatui::{
@@ -11,7 +12,7 @@ use ratatui::{
 pub struct GameRenderer<'a> {
     board: &'a Board,
     selection: &'a Selection,
-    hover_selection: Option<&'a Selection>,
+    hover_state: &'a HoverState,
     debug_log: &'a DebugLog,
     board_renderer: &'a mut BoardRenderer,
 }
@@ -20,14 +21,14 @@ impl<'a> GameRenderer<'a> {
     pub fn new(
         board: &'a Board,
         selection: &'a Selection,
-        hover_selection: Option<&'a Selection>,
+        hover_state: &'a HoverState,
         debug_log: &'a DebugLog,
         board_renderer: &'a mut BoardRenderer
     ) -> Self {
         Self {
             board,
             selection,
-            hover_selection,
+            hover_state,
             debug_log,
             board_renderer,
         }
@@ -60,7 +61,7 @@ impl<'a> Widget for GameRenderer<'a> {
             Style::default().fg(Color::Yellow),
         );
 
-        self.board_renderer.render(self.board, self.selection, self.hover_selection, buf, vertical_sections[2]);
+        self.board_renderer.render(self.board, self.selection, self.hover_state, buf, vertical_sections[2]);
 
         self.debug_log.render(vertical_sections[3], buf);
     }

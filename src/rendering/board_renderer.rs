@@ -1,4 +1,5 @@
-use crate::game_objects::{Board, PileType, Selection};
+use crate::game_objects::{Board, Pile, PileType, Selection};
+use crate::game_logic::HoverState;
 use crate::rendering::{card_renderer::CardRenderer, pile_renderer::PileRenderer};
 use ratatui::{
     buffer::Buffer,
@@ -31,7 +32,14 @@ impl BoardRenderer {
     }
 
     /// Renders the complete board with hover highlighting
-    pub fn render(&mut self, board: &Board, selection: &Selection, hover_selection: Option<&Selection>, buf: &mut Buffer, area: Rect) {
+    pub fn render(
+        &mut self, 
+        board: &Board, 
+        selection: &Selection, 
+        hover_state: &HoverState, 
+        buf: &mut Buffer, 
+        area: Rect
+    ) {
         self.pile_bounds.clear();
         let vertical_sections = Layout::vertical([
             Constraint::Length(CardRenderer::HEIGHT + 1),   // Stock/Waste/Foundation + labels
@@ -54,8 +62,11 @@ impl BoardRenderer {
         .flex(Flex::Center)
         .split(vertical_sections[0]);
 
-        self.render_stock_and_waste(board, selection, hover_selection, buf, top_row_sections[0], top_row_sections[1]);
-        self.render_foundations(board, selection, hover_selection, buf, &top_row_sections[3..7]);
+        //self.render_stock_and_waste(board, selection, hover_state, buf, top_row_sections[0], top_row_sections[1]);
+        self.render_pile(Some("Stock"), &board.stock, 0, selection, hover_state, top_row_sections[0], buf);
+        self.render_pile(Some("Waste"), &board.waste, 0, selection, hover_state, top_row_sections[1], buf);
+
+        self.render_foundations(board, selection, hover_state, buf, &top_row_sections[3..7]);
 
         let tableau_sections = Layout::horizontal([
             Constraint::Length(CardRenderer::WIDTH),
@@ -70,57 +81,44 @@ impl BoardRenderer {
         .flex(Flex::Center)
         .split(vertical_sections[2]);
 
-        self.render_tableau(board, selection, hover_selection, buf, &tableau_sections);
+        self.render_tableau(board, selection, hover_state, buf, &tableau_sections);
+    }
+
+    fn render_foundations(&mut self, board: &Board, selection: &Selection, hover_state: &HoverState, buf: &mut Buffer, foundation_areas: &[Rect]) {
+        for (i, (pile, area)) in board.foundation.iter().zip(foundation_areas).enumerate() {
+            self.render_pile(Some(&format!("F{}", i + 1)), pile, i, selection, hover_state, *area, buf);
+        }
+    }
+
+    fn render_tableau(&mut self, board: &Board, selection: &Selection, hover_state: &HoverState, buf: &mut Buffer, tableau_areas: &[Rect]) {
+        for (i, (pile, area)) in board.tableau.iter().zip(tableau_areas).enumerate() {
+            self.render_pile(Some(&format!("T{}", i)), pile, i, selection, hover_state, *area, buf);
+        }
     }
 
     fn render_pile_label(&self, buf: &mut Buffer, area: Rect, label: &str) {
         buf.set_string(area.x, area.y, label, Style::default().fg(Color::Gray));
     }
 
-    fn render_stock_and_waste(&mut self, board: &Board, selection: &Selection, hover_selection: Option<&Selection>, buf: &mut Buffer, stock_area: Rect, waste_area: Rect) {
-        self.render_pile_label(buf, stock_area, "Stock");
-        let stock_pile_area = Rect { x: stock_area.x, y: stock_area.y + 1, ..stock_area };
-        self.pile_bounds.push(PileBounds {
-            pile_type: PileType::Stock,
-            pile_index: 0,
-            rect: stock_pile_area,
-        });
-        self.pile_renderer.render(&board.stock, 0, selection, hover_selection, buf, stock_pile_area);
-
-        self.render_pile_label(buf, waste_area, "Waste");
-        let waste_pile_area = Rect { x: waste_area.x, y: waste_area.y + 1, ..waste_area };
-        self.pile_bounds.push(PileBounds {
-            pile_type: PileType::Waste,
-            pile_index: 0,
-            rect: waste_pile_area,
-        });
-        self.pile_renderer.render(&board.waste, 0, selection, hover_selection, buf, waste_pile_area);
-    }
-
-    fn render_foundations(&mut self, board: &Board, selection: &Selection, hover_selection: Option<&Selection>, buf: &mut Buffer, foundation_areas: &[Rect]) {
-        for (i, (pile, area)) in board.foundation.iter().zip(foundation_areas).enumerate() {
-            self.render_pile_label(buf, *area, &format!("F{}", i + 1));
-            let pile_area = Rect { x: area.x, y: area.y + 1, ..*area };
-            self.pile_bounds.push(PileBounds {
-                pile_type: PileType::Foundation,
-                pile_index: i,
-                rect: pile_area,
-            });
-            self.pile_renderer.render(pile, i, selection, hover_selection, buf, pile_area);
+    fn render_pile(&mut self,
+        label: Option<&str>,
+        pile: &Pile,
+        index: usize,
+        selection: &Selection,
+        hover_state: &HoverState,
+        area: Rect,
+        buf: &mut Buffer
+    ) {
+        if let Some(lab) = label {
+            self.render_pile_label(buf, area, lab);
         }
-    }
-
-    fn render_tableau(&mut self, board: &Board, selection: &Selection, hover_selection: Option<&Selection>, buf: &mut Buffer, tableau_areas: &[Rect]) {
-        for (i, (pile, area)) in board.tableau.iter().zip(tableau_areas).enumerate() {
-            self.render_pile_label(buf, *area, &format!("T{}", i + 1));
-            let pile_area = Rect { x: area.x, y: area.y + 1, ..*area };
-            self.pile_bounds.push(PileBounds {
-                pile_type: PileType::Tableau,
-                pile_index: i,
-                rect: pile_area,
-            });
-            self.pile_renderer.render(pile, i, selection, hover_selection, buf, pile_area);
-        }
+        let pile_area = Rect { x: area.x, y: area.y + 1, ..area };
+        self.pile_bounds.push(PileBounds {
+            pile_type: pile.pile_type,
+            pile_index: index,
+            rect: pile_area,
+        });
+        self.pile_renderer.render(pile, index, selection, hover_state, buf, pile_area);
     }
 
     /// Converts screen coordinates to a Selection, if a pile is at that position

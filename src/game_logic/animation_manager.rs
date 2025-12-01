@@ -12,7 +12,7 @@ impl AnimationManager {
         Self {
             animation_active: false,
             last_move_time: None,
-            animation_interval: Duration::from_millis(500),
+            animation_interval: Duration::from_millis(100),
         }
     }
 

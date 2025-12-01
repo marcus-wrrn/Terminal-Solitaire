@@ -163,4 +163,64 @@ impl GameState {
             pile.cards.iter().all(|card| card.face_up)
         })
     }
+
+    pub fn is_valid_placement(&self, target: &Selection) -> bool {
+        let source = match self.picked_up {
+            Some(s) => s,
+            None => return false,
+        };
+
+        if source == *target {
+            return true;
+        }
+
+        match (source.pile, target.pile) {
+            (PileType::Tableau, PileType::Tableau) => {
+                if let Some(source_pile) = self.board.get_tableau_pile(source.pile_index) {
+                    if source.card_index >= source_pile.len() {
+                        return false;
+                    }
+                    if let Some(first_card) = source_pile.cards.get(source.card_index) {
+                        if let Some(target_pile) = self.board.get_tableau_pile(target.pile_index) {
+                            return target_pile.can_place_card(first_card);
+                        }
+                    }
+                }
+                false
+            }
+            (PileType::Tableau, PileType::Foundation) => {
+                if let Some(pile) = self.board.get_tableau_pile(source.pile_index) {
+                    if source.card_index != pile.len() - 1 {
+                        return false;
+                    }
+                    if let Some(card) = pile.peek() {
+                        if let Some(foundation) = self.board.get_foundation_pile(target.pile_index) {
+                            return foundation.can_place_card(card);
+                        }
+                    }
+                }
+                false
+            }
+            (PileType::Waste, PileType::Tableau) => {
+                if let Some(card) = self.board.waste.peek() {
+                    if let Some(pile) = self.board.get_tableau_pile(target.pile_index) {
+                        return pile.can_place_card(card);
+                    }
+                }
+                false
+            }
+            (PileType::Waste, PileType::Foundation) => {
+                if let Some(card) = self.board.waste.peek() {
+                    if let Some(pile) = self.board.get_foundation_pile(target.pile_index) {
+                        return pile.can_place_card(card);
+                    }
+                }
+                false
+            }
+            (PileType::Foundation, PileType::Tableau) => {
+                false
+            }
+            _ => false,
+        }
+    }
 }

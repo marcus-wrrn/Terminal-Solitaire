@@ -1,5 +1,4 @@
-use crate::game_objects::Selection;
-use crate::game_logic::{GameState, SelectionNavigator, AnimationManager};
+use crate::game_logic::{GameState, SelectionNavigator, AnimationManager, HoverState};
 use crate::rendering::{GameRenderer, BoardRenderer};
 use crate::controller::{Controller, GameAction};
 use crate::ui::{DebugLog, OptionsMenu, WinPopup};
@@ -11,7 +10,7 @@ pub struct GameManager {
     controller: Controller,
     debug_log: DebugLog,
     board_renderer: BoardRenderer,
-    hover_selection: Option<Selection>,
+    hover_state: HoverState,
     options_menu: OptionsMenu,
     win_popup: WinPopup,
     animation_manager: AnimationManager,
@@ -34,7 +33,7 @@ impl GameManager {
             controller: Controller::new(),
             debug_log: DebugLog::default(),
             board_renderer: BoardRenderer::new(),
-            hover_selection: None,
+            hover_state: HoverState::None,
             options_menu: OptionsMenu::new(),
             win_popup,
             animation_manager: AnimationManager::new(),
@@ -69,7 +68,7 @@ impl GameManager {
                         GameAction::Restart => {
                             self.game_state = GameState::new();
                             self.debug_log.clear();
-                            self.hover_selection = None;
+                            self.hover_state = HoverState::None;
                             self.win_popup.hide();
                             self.animation_manager.stop_animation();
                         }
@@ -123,7 +122,7 @@ impl GameManager {
                         GameAction::Restart => {
                             self.game_state = GameState::new();
                             self.debug_log.clear();
-                            self.hover_selection = None;
+                            self.hover_state = HoverState::None;
                             self.animation_manager.stop_animation();
                         }
                         GameAction::Help => {
@@ -140,7 +139,7 @@ impl GameManager {
                         }
                         GameAction::CancelDrag => {
                             self.game_state.cancel_pickup();
-                            self.hover_selection = None;
+                            self.hover_state = HoverState::None;
                         }
                         _ => {}
                     }
@@ -166,13 +165,24 @@ impl GameManager {
         fn handle_start_drag(&mut self, x: u16, y: u16) {
         if let Some(selection) = self.board_renderer.coordinate_to_selection(self.game_state.board(), x, y) {
             self.game_state.set_selection(selection);
-            let _ = self.game_state.pick_up_cards();
+            if let Err(msg) = self.game_state.pick_up_cards() {
+                self.debug_log.log(format!("{}", msg));
+            }
         }
     }
 
     fn handle_update_drag(&mut self, x: u16, y: u16) {
         if self.game_state.has_picked_up_cards() {
-            self.hover_selection = self.board_renderer.coordinate_to_selection(self.game_state.board(), x, y);
+            if let Some(target) = self.board_renderer.coordinate_to_selection(self.game_state.board(), x, y) {
+                let is_valid = self.game_state.is_valid_placement(&target);
+                self.hover_state = if is_valid {
+                    HoverState::Valid(target)
+                } else {
+                    HoverState::Invalid(target)
+                };
+            } else {
+                self.hover_state = HoverState::None;
+            }
         }
     }
 
@@ -183,11 +193,11 @@ impl GameManager {
                 if let Err(val) = self.game_state.place_cards() {
                     self.debug_log.log(format!("{}", val));
                 }
-                
-            } 
+
+            }
             self.game_state.cancel_pickup();
         }
-        self.hover_selection = None;
+        self.hover_state = HoverState::None;
     }
 
     pub fn draw(&mut self, frame: &mut Frame) {
@@ -195,7 +205,7 @@ impl GameManager {
         let game_renderer = GameRenderer::new(
             self.game_state.board(),
             &selection,
-            self.hover_selection.as_ref(),
+            &self.hover_state,
             &self.debug_log,
             &mut self.board_renderer
         );

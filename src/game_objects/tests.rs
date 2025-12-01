@@ -221,7 +221,7 @@ mod tests {
         let mut pile = Pile::new(PileType::Waste);
         let card = Card::new(Suit::Hearts, Rank::Ace);
 
-        pile.push(card);
+        pile.add_card(card);
         assert_eq!(pile.len(), 1);
         assert!(!pile.is_empty());
 
@@ -239,10 +239,10 @@ mod tests {
         let card1 = Card::new(Suit::Hearts, Rank::Five);
         let card2 = Card::new(Suit::Spades, Rank::Four);
 
-        pile.push(card1);
+        pile.add_card(card1);
         assert_eq!(pile.peek(), Some(&card1));
 
-        pile.push(card2);
+        pile.add_card(card2);
         assert_eq!(pile.peek(), Some(&card2));
     }
 
@@ -263,7 +263,7 @@ mod tests {
         let black_four = Card::new(Suit::Spades, Rank::Four);
         let red_four = Card::new(Suit::Diamonds, Rank::Four);
 
-        pile.push(red_five);
+        pile.add_card(red_five);
 
         assert!(pile.can_place_card(&black_four));
         assert!(!pile.can_place_card(&red_four));
@@ -276,7 +276,7 @@ mod tests {
         let black_four = Card::new(Suit::Spades, Rank::Four);
         let black_three = Card::new(Suit::Clubs, Rank::Three);
 
-        pile.push(red_five);
+        pile.add_card(red_five);
 
         assert!(pile.can_place_card(&black_four));
         assert!(!pile.can_place_card(&black_three));
@@ -299,7 +299,7 @@ mod tests {
         let hearts_two = Card::new(Suit::Hearts, Rank::Two);
         let spades_two = Card::new(Suit::Spades, Rank::Two);
 
-        pile.push(hearts_ace);
+        pile.add_card(hearts_ace);
 
         assert!(pile.can_place_card(&hearts_two));
         assert!(!pile.can_place_card(&spades_two));
@@ -308,8 +308,8 @@ mod tests {
     #[test]
     fn test_pile_foundation_requires_ascending_rank() {
         let mut pile = Pile::new(PileType::Foundation);
-        pile.push(Card::new(Suit::Hearts, Rank::Ace));
-        pile.push(Card::new(Suit::Hearts, Rank::Two));
+        pile.add_card(Card::new(Suit::Hearts, Rank::Ace));
+        pile.add_card(Card::new(Suit::Hearts, Rank::Two));
 
         let three = Card::new(Suit::Hearts, Rank::Three);
         let four = Card::new(Suit::Hearts, Rank::Four);
@@ -331,10 +331,10 @@ mod tests {
     #[test]
     fn test_pile_take_cards_from() {
         let mut pile = Pile::new(PileType::Tableau);
-        pile.push(Card::new(Suit::Hearts, Rank::King));
-        pile.push(Card::new(Suit::Spades, Rank::Queen));
-        pile.push(Card::new(Suit::Hearts, Rank::Jack));
-        pile.push(Card::new(Suit::Spades, Rank::Ten));
+        pile.add_card(Card::new(Suit::Hearts, Rank::King));
+        pile.add_card(Card::new(Suit::Spades, Rank::Queen));
+        pile.add_card(Card::new(Suit::Hearts, Rank::Jack));
+        pile.add_card(Card::new(Suit::Spades, Rank::Ten));
 
         let taken = pile.take_cards_from(2);
 
@@ -347,7 +347,7 @@ mod tests {
     #[test]
     fn test_pile_take_cards_from_invalid_index() {
         let mut pile = Pile::new(PileType::Tableau);
-        pile.push(Card::new(Suit::Hearts, Rank::King));
+        pile.add_card(Card::new(Suit::Hearts, Rank::King));
 
         let taken = pile.take_cards_from(10);
         assert_eq!(taken.len(), 0);
@@ -357,7 +357,7 @@ mod tests {
     #[test]
     fn test_pile_add_cards() {
         let mut pile = Pile::new(PileType::Tableau);
-        pile.push(Card::new(Suit::Hearts, Rank::King));
+        pile.add_card(Card::new(Suit::Hearts, Rank::King));
 
         let cards = vec![
             Card::new(Suit::Spades, Rank::Queen),
@@ -374,7 +374,7 @@ mod tests {
         let card = Card::new(Suit::Hearts, Rank::King);
         assert!(!card.face_up);
 
-        pile.push(card);
+        pile.add_card(card);
         pile.flip_top_card();
 
         let top = pile.peek().unwrap();

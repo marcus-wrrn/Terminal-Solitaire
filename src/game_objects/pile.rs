@@ -21,7 +21,7 @@ impl Pile {
         }
     }
 
-    pub fn push(&mut self, card: Card) {
+    pub fn add_card(&mut self, card: Card) {
         self.cards.push(card);
     }
 
@@ -29,6 +29,7 @@ impl Pile {
         self.cards.pop()
     }
 
+    /// Look at topmost card on the pile
     pub fn peek(&self) -> Option<&Card> {
         self.cards.last()
     }

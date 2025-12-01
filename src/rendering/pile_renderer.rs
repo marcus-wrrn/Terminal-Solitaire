@@ -1,4 +1,5 @@
 use crate::game_objects::{Pile, PileType, Selection};
+use crate::game_logic::HoverState;
 use crate::rendering::card_renderer::CardRenderer;
 use ratatui::{
     buffer::Buffer,
@@ -22,93 +23,55 @@ impl PileRenderer {
         }
     }
 
-    pub fn render(&self, pile: &Pile, pile_index: usize, current_selection: &Selection, hover_selection: Option<&Selection>, buf: &mut Buffer, area: Rect) {
-        let is_hover_target = hover_selection
-            .map(|h| h.pile == pile.pile_type && h.pile_index == pile_index)
-            .unwrap_or(false);
+    pub fn render(&self,
+        pile: &Pile,
+        pile_index: usize,
+        current_selection: &Selection,
+        hover_state: &HoverState,
+        buf: &mut Buffer,
+        area: Rect
+    ) {
+        let (is_hover_target, is_valid) = match hover_state {
+            HoverState::Valid(sel) if sel.pile == pile.pile_type && sel.pile_index == pile_index => (true, true),
+            HoverState::Invalid(sel) if sel.pile == pile.pile_type && sel.pile_index == pile_index => (true, false),
+            _ => (false, false),
+        };
 
-        match pile.pile_type {
-            PileType::Tableau => self.render_tableau(pile, pile_index, current_selection, is_hover_target, buf, area),
-            PileType::Foundation => self.render_foundation(pile, pile_index, current_selection, is_hover_target, buf, area),
-            PileType::Stock => self.render_stock(pile, pile_index, current_selection, is_hover_target, buf, area),
-            PileType::Waste => self.render_waste(pile, pile_index, current_selection, is_hover_target, buf, area),
-        }
-    }
-
-    fn render_tableau(&self, pile: &Pile, pile_index: usize, current_selection: &Selection, is_hover_target: bool, buf: &mut Buffer, area: Rect) {
-        let is_pile_selected = current_selection.pile == PileType::Tableau
-                            && current_selection.pile_index == pile_index;
-
+        let is_selected = current_selection.pile == pile.pile_type && current_selection.pile_index == pile_index;
+        
         if pile.is_empty() {
-            self.render_empty_pile(buf, area, is_pile_selected, is_hover_target);
+            self.render_empty_pile(buf, area, is_selected, is_hover_target, is_valid);
             return;
-        }
+        } 
+        
+        if pile.pile_type == PileType::Tableau {
+            for (idx, card) in pile.cards.iter().enumerate() {
+                let card_y = area.y + (idx as u16) * Self::VERTICAL_OVERLAP;
+                let is_last_card = idx == pile.cards.len() - 1;
+                let is_card_selected = is_selected && current_selection.card_index == idx;
 
-        for (idx, card) in pile.cards.iter().enumerate() {
-            let card_y = area.y + (idx as u16) * Self::VERTICAL_OVERLAP;
-            let is_last_card = idx == pile.cards.len() - 1;
-            let is_card_selected = is_pile_selected && current_selection.card_index == idx;
-
-            if is_last_card {
-                self.card_renderer.render(card, is_card_selected, buf, area.x, card_y);
-            } else {
-                self.card_renderer.render_overlapped(card, is_card_selected, buf, area.x, card_y, Self::VERTICAL_OVERLAP);
+                if is_last_card {
+                    self.card_renderer.render(card, is_card_selected, buf, area.x, card_y);
+                } else {
+                    self.card_renderer.render_overlapped(card, is_card_selected, buf, area.x, card_y, Self::VERTICAL_OVERLAP);
+                }
             }
-        }
 
-        if is_hover_target && !pile.is_empty() {
-            let mut area_cp = area.clone();
-            area_cp.y = area.y + (pile.len() as u16) * Self::VERTICAL_OVERLAP;
-            self.render_hover_highlight(buf, area_cp);
-        }
-    }
-
-    fn render_foundation(&self, pile: &Pile, pile_index: usize, current_selection: &Selection, is_hover_target: bool, buf: &mut Buffer, area: Rect) {
-        let is_pile_selected = current_selection.pile == PileType::Foundation
-                            && current_selection.pile_index == pile_index;
-
-        if pile.is_empty() {
-            self.render_empty_pile(buf, area, is_pile_selected, is_hover_target);
+            if is_hover_target && !pile.is_empty() {
+                let mut area_cp = area.clone();
+                area_cp.y = area.y + (pile.len() as u16) * Self::VERTICAL_OVERLAP;
+                self.render_hover_highlight(buf, area_cp, is_valid);
+            }
         } else if let Some(card) = pile.peek() {
-            let is_card_selected = is_pile_selected && current_selection.card_index == pile.len() - 1;
+            let is_card_selected = is_selected && current_selection.card_index == pile.len() - 1;
             self.card_renderer.render(card, is_card_selected, buf, area.x, area.y);
             if is_hover_target {
-                self.render_hover_highlight(buf, area);
+                self.render_hover_highlight(buf, area, is_valid);
             }
         }
     }
 
-    fn render_stock(&self, pile: &Pile, pile_index: usize, current_selection: &Selection, is_hover_target: bool, buf: &mut Buffer, area: Rect) {
-        let is_pile_selected = current_selection.pile == PileType::Stock
-                            && current_selection.pile_index == pile_index;
-
-        if pile.is_empty() {
-            self.render_empty_pile(buf, area, is_pile_selected, is_hover_target);
-        } else if let Some(card) = pile.peek() {
-            let is_card_selected = is_pile_selected && current_selection.card_index == pile.len() - 1;
-            self.card_renderer.render(card, is_card_selected, buf, area.x, area.y);
-            if is_hover_target {
-                self.render_hover_highlight(buf, area);
-            }
-        }
-    }
-
-    fn render_waste(&self, pile: &Pile, pile_index: usize, current_selection: &Selection, is_hover_target: bool, buf: &mut Buffer, area: Rect) {
-        let is_pile_selected = current_selection.pile == PileType::Waste
-                            && current_selection.pile_index == pile_index;
-
-        if pile.is_empty() {
-            self.render_empty_pile(buf, area, is_pile_selected, is_hover_target);
-        } else if let Some(card) = pile.peek() {
-            let is_card_selected = is_pile_selected && current_selection.card_index == pile.len() - 1;
-            self.card_renderer.render(card, is_card_selected, buf, area.x, area.y);
-            if is_hover_target {
-                self.render_hover_highlight(buf, area);
-            }
-        }
-    }
-
-    fn render_empty_pile(&self, buf: &mut Buffer, area: Rect, is_selected: bool, is_hover_target: bool) {
+    fn render_empty_pile(&self, buf: &mut Buffer, area: Rect, is_selected: bool, is_hover_target: bool, is_valid: bool) {
         let card_area = Rect {
             x: area.x,
             y: area.y,
@@ -120,11 +83,12 @@ impl PileRenderer {
             let horizontal_count = card_area.width.saturating_sub(2) as usize;
 
             let (top_border, vertical, bottom_border, border_style) = if is_hover_target {
+                let color = if is_valid { Color::Green } else { Color::Red };
                 (
                     format!("╔{}╗", "═".repeat(horizontal_count)),
                     "║".to_string(),
                     format!("╚{}╝", "═".repeat(horizontal_count)),
-                    Style::default().fg(Color::Green),
+                    Style::default().fg(color),
                 )
             } else if is_selected {
                 (
@@ -168,7 +132,7 @@ impl PileRenderer {
         }
     }
 
-    fn render_hover_highlight(&self, buf: &mut Buffer, area: Rect) {
+    fn render_hover_highlight(&self, buf: &mut Buffer, area: Rect, is_valid: bool) {
         let card_area = Rect {
             x: area.x,
             y: area.y,
@@ -181,7 +145,8 @@ impl PileRenderer {
         }
 
         let horizontal_count = card_area.width.saturating_sub(2) as usize;
-        let border_style = Style::default().fg(Color::Green);
+        let color = if is_valid { Color::Green } else { Color::Red };
+        let border_style = Style::default().fg(color);
 
         let top_border = format!("╔{}╗", "═".repeat(horizontal_count));
         let vertical = "║";
