@@ -1,4 +1,4 @@
-use crate::game_objects::Board;
+use crate::{game_logic::GameState, game_objects::Board, ui::DebugLog};
 use std::time::{Duration, Instant};
 
 pub struct AnimationManager {
@@ -13,6 +13,21 @@ impl AnimationManager {
             animation_active: false,
             last_move_time: None,
             animation_interval: Duration::from_millis(100),
+        }
+    }
+
+    pub fn process_game_state(&mut self, game_state: &mut GameState, debug_log: &mut DebugLog) {
+        if (game_state.has_won() || game_state.all_tableau_cards_face_up()) && !self.is_active() {
+            self.start_animation();
+        }
+
+        if self.is_active() {
+            let board = game_state.board_mut();
+            if let Err(msg) = self.win_animation(board) {
+                if msg == "No valid moves available" {
+                    debug_log.log(format!("Animation stopped: {}", msg));
+                }
+            }
         }
     }
 

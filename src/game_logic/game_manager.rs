@@ -43,19 +43,7 @@ impl GameManager {
     pub fn run(mut self, mut terminal: DefaultTerminal) -> Result<(), io::Error> {
         loop {
             terminal.draw(|frame| self.draw(frame))?;
-
-            if (self.game_state.has_won() || self.game_state.all_tableau_cards_face_up()) && !self.win_popup.is_visible() && !self.animation_manager.is_active() {
-                self.animation_manager.start_animation();
-            }
-
-            if self.animation_manager.is_active() {
-                let board = self.game_state.board_mut();
-                if let Err(msg) = self.animation_manager.win_animation(board) {
-                    if msg == "No valid moves available" {
-                        self.debug_log.log(format!("Animation stopped: {}", msg));
-                    }
-                }
-            }
+            self.animation_manager.process_game_state(&mut self.game_state, &mut self.debug_log);
 
             if self.game_state.has_won() && !self.win_popup.is_visible() {
                 self.win_popup.show();
@@ -66,11 +54,7 @@ impl GameManager {
                     match action {
                         GameAction::Quit => break,
                         GameAction::Restart => {
-                            self.game_state = GameState::new();
-                            self.debug_log.clear();
-                            self.hover_state = HoverState::None;
-                            self.win_popup.hide();
-                            self.animation_manager.stop_animation();
+                            self.restart_game();
                         }
                         _ => {}
                     }
@@ -151,12 +135,18 @@ impl GameManager {
         }
     }
 
-        fn handle_start_drag(&mut self, x: u16, y: u16) {
+    fn handle_start_drag(&mut self, x: u16, y: u16) {
         if let Some(selection) = self.board_renderer.coordinate_to_selection(self.game_state.board(), x, y) {
             self.game_state.set_selection(selection);
             if let Err(msg) = self.game_state.pick_up_cards() {
                 self.debug_log.log(format!("{}", msg));
             }
+        }
+    }
+
+    fn handle_stock_click(&mut self) {
+        if let Err(msg) = self.game_state.draw_from_stock() {
+            self.debug_log.log(msg);
         }
     }
 
@@ -176,14 +166,18 @@ impl GameManager {
     }
 
     fn handle_complete_drag(&mut self, x: u16, y: u16) {
-        if self.game_state.has_picked_up_cards() {
-            if let Some(target) = self.board_renderer.coordinate_to_selection(self.game_state.board(), x, y) {
+        if let Some(target) = self.board_renderer.coordinate_to_selection(self.game_state.board(), x, y) {
+            if target.pile == crate::game_objects::PileType::Stock && !self.game_state.has_picked_up_cards() {
+                self.handle_stock_click();
+            } else if self.game_state.has_picked_up_cards() {
                 self.game_state.set_selection(target);
                 if let Err(val) = self.game_state.place_cards() {
                     self.debug_log.log(format!("{}", val));
                 }
-
             }
+        }
+
+        if self.game_state.has_picked_up_cards() {
             self.game_state.cancel_pickup();
         }
         self.hover_state = HoverState::None;
@@ -194,11 +188,7 @@ impl GameManager {
             MenuAction::OptionSelected(option) => {
                 match option {
                     MenuOption::Restart => {
-                        self.game_state = GameState::new();
-                        self.debug_log.clear();
-                        self.hover_state = HoverState::None;
-                        self.animation_manager.stop_animation();
-                        self.win_popup.hide();
+                        self.restart_game();
                     }
                     MenuOption::RebindKeys => {
                     }
@@ -210,6 +200,14 @@ impl GameManager {
             }
             _ => {}
         }
+    }
+
+    fn restart_game(&mut self) {
+        self.game_state = GameState::new();
+        self.debug_log.clear();
+        self.hover_state = HoverState::None;
+        self.animation_manager.stop_animation();
+        self.win_popup.hide();
     }
 
     pub fn draw(&mut self, frame: &mut Frame) {

@@ -47,10 +47,6 @@ impl OptionsMenu {
         }
     }
 
-    pub fn show(&mut self) {
-        self.is_visible = true;
-    }
-
     pub fn hide(&mut self) {
         self.is_visible = false;
     }

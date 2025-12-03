@@ -80,7 +80,8 @@ impl GameState {
                 }
             }
             PileType::Stock => {
-                Err("Cannot pick up cards from stock")
+                // Stock can be clicked but not picked up
+                Ok(())
             }
         }
     }
