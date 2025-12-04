@@ -27,7 +27,10 @@ pub struct DragState {
     /// Current mouse position
     pub current_x: u16,
     pub current_y: u16,
+    pub is_active: bool,
 }
+
+const DRAG_THRESHOLD: u16 = 2;
 
 /// Represents actions the player can take in the game
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
@@ -92,6 +95,10 @@ pub enum GameAction {
     /// Cancel drag operation
     CancelDrag,
 
+    LeftMousePress(u16, u16),
+
+    Click,
+
     /// No action (for unbound keys)
     None,
 }
@@ -105,7 +112,6 @@ pub struct Controller {
 }
 
 impl Controller {
-    /// Create a new Controller with default key bindings
     pub fn new() -> Self {
         Self {
             key_bindings: KeyBindings::default(),
@@ -115,43 +121,14 @@ impl Controller {
         }
     }
 
-    /// Create a new Controller with custom key bindings
-    pub fn with_key_bindings(key_bindings: KeyBindings) -> Self {
-        Self {
-            key_bindings,
-            current_focus: FocusArea::Tableau,
-            drag_state: None,
-            control_mode: ControlMode::Keyboard,
+    fn is_drag_movement(&self, x: u16, y: u16) -> bool {
+        if let Some(drag) = &self.drag_state {
+            let dx = (x as i32 - drag.start_x as i32).abs();
+            let dy = (y as i32 - drag.start_y as i32).abs();
+            (dx as u16) > DRAG_THRESHOLD || (dy as u16) > DRAG_THRESHOLD
+        } else {
+            false
         }
-    }
-
-    pub fn key_bindings(&self) -> &KeyBindings {
-        &self.key_bindings
-    }
-
-    pub fn key_bindings_mut(&mut self) -> &mut KeyBindings {
-        &mut self.key_bindings
-    }
-
-    pub fn current_focus(&self) -> FocusArea {
-        self.current_focus
-    }
-
-    /// Set the current focus area
-    pub fn set_focus(&mut self, focus: FocusArea) {
-        self.current_focus = focus;
-    }
-
-    pub fn drag_state(&self) -> Option<DragState> {
-        self.drag_state
-    }
-
-    pub fn is_dragging(&self) -> bool {
-        self.drag_state.is_some()
-    }
-
-    pub fn control_mode(&self) -> ControlMode {
-        self.control_mode
     }
 
     pub fn poll_action(&mut self) -> io::Result<Option<GameAction>> {
@@ -175,17 +152,17 @@ impl Controller {
     }
 
     /// This method will block until a key event is received.
-    pub fn read_action(&mut self) -> io::Result<GameAction> {
-        loop {
-            if let Event::Key(key) = event::read()? {
-                if key.kind == KeyEventKind::Press {
-                    let action = self.map_key_to_action(key);
-                    self.handle_key_action(action.clone());
-                    return Ok(action);
-                }
-            }
-        }
-    }
+    // pub fn read_action(&mut self) -> io::Result<GameAction> {
+    //     loop {
+    //         if let Event::Key(key) = event::read()? {
+    //             if key.kind == KeyEventKind::Press {
+    //                 let action = self.map_key_to_action(key);
+    //                 self.handle_key_action(action.clone());
+    //                 return Ok(action);
+    //             }
+    //         }
+    //     }
+    // }
 
     fn handle_key_action(&mut self, action: GameAction) {
         match action {
@@ -216,22 +193,41 @@ impl Controller {
                     start_y: mouse.row,
                     current_x: mouse.column,
                     current_y: mouse.row,
+                    is_active: false,
                 });
-                Some(GameAction::StartDrag(mouse.column, mouse.row))
+                Some(GameAction::LeftMousePress(mouse.column, mouse.row))
             }
             MouseEventKind::Drag(MouseButton::Left) => {
-                if let Some(ref mut drag) = self.drag_state {
-                    drag.current_x = mouse.column;
-                    drag.current_y = mouse.row;
-                    Some(GameAction::UpdateDrag(mouse.column, mouse.row))
+                if let Some(drag) = self.drag_state {
+                    let is_drag = self.is_drag_movement(mouse.column, mouse.row);
+
+                    self.drag_state = Some(DragState {
+                        start_x: drag.start_x,
+                        start_y: drag.start_y,
+                        current_x: mouse.column,
+                        current_y: mouse.row,
+                        is_active: drag.is_active || is_drag,
+                    });
+
+                    if !drag.is_active && is_drag {
+                        Some(GameAction::StartDrag(drag.start_x, drag.start_y))
+                    } else if drag.is_active {
+                        Some(GameAction::UpdateDrag(mouse.column, mouse.row))
+                    } else {
+                        None
+                    }
                 } else {
                     None
                 }
             }
             MouseEventKind::Up(MouseButton::Left) => {
-                if self.drag_state.is_some() {
+                if let Some(drag) = self.drag_state {
                     self.drag_state = None;
-                    Some(GameAction::CompleteDrag(mouse.column, mouse.row))
+                    if drag.is_active {
+                        Some(GameAction::CompleteDrag(mouse.column, mouse.row))
+                    } else {
+                        Some(GameAction::Click)
+                    }
                 } else {
                     None
                 }
@@ -294,33 +290,4 @@ impl Default for Controller {
     fn default() -> Self {
         Self::new()
     }
-}
-
-#[cfg(test)]
-mod tests {
-    use super::*;
-
-    #[test]
-    fn test_controller_creation() {
-        let controller = Controller::new();
-        assert_eq!(controller.current_focus(), FocusArea::Tableau);
-    }
-
-    #[test]
-    fn test_focus_management() {
-        let mut controller = Controller::new();
-        controller.set_focus(FocusArea::Foundation);
-        assert_eq!(controller.current_focus(), FocusArea::Foundation);
-    }
-
-    // #[test]
-    // fn test_custom_key_bindings() {
-    //     let custom_bindings = KeyBindings::default()
-    //         .with_quit(KeyCode::Char('x'))
-    //         .with_select(KeyCode::Char('s'));
-
-    //     let controller = Controller::with_key_bindings(custom_bindings);
-    //     assert_eq!(controller.key_bindings().quit, KeyCode::Char('x'));
-    //     assert_eq!(controller.key_bindings().select, KeyCode::Char('s'));
-    // }
 }

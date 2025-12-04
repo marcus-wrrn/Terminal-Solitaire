@@ -1,4 +1,5 @@
 use crate::game_logic::{GameState, SelectionNavigator, AnimationManager, HoverState, MenuManager, MenuAction};
+use crate::game_objects::Selection;
 use crate::rendering::{GameRenderer, BoardRenderer};
 use crate::controller::{Controller, GameAction};
 use crate::ui::{DebugLog, WinPopup, MenuOption};
@@ -93,13 +94,16 @@ impl GameManager {
                         GameAction::Undo => {
                         }
                         GameAction::Restart => {
-                            self.game_state = GameState::new();
-                            self.debug_log.clear();
-                            self.hover_state = HoverState::None;
-                            self.animation_manager.stop_animation();
+                            self.restart_game();
                         }
                         GameAction::Help => {
                             self.menu_manager.toggle_options_menu();
+                        }
+                        GameAction::LeftMousePress(x, y) => {
+                            self.handle_left_mouse_press(x, y);
+                        }
+                        GameAction::Click => {
+                            self.handle_click();
                         }
                         GameAction::StartDrag(x, y) => {
                             self.handle_start_drag(x, y);
@@ -131,6 +135,29 @@ impl GameManager {
         } else {
             if let Err(msg) = self.game_state.pick_up_cards() {
                 self.debug_log.log(format!("{}", msg));
+            }
+        }
+    }
+
+    fn handle_left_mouse_press(&mut self, x: u16, y: u16) {
+        if let Some(selection) = self.board_renderer.coordinate_to_selection(self.game_state.board(), x, y) {
+            self.game_state.set_selection(selection);
+        }
+    }
+
+    fn handle_click(&mut self) {
+        let selection = self.game_state.selection();
+        let moves = self.find_valid_moves(&selection);
+
+        if let Some(first_move) = moves.first() {
+            if let Err(msg) = self.game_state.pick_up_cards() {
+                self.debug_log.log(format!("{}", msg));
+            } else {
+                self.game_state.set_selection(*first_move);
+                if let Err(msg) = self.game_state.place_cards() {
+                    self.debug_log.log(format!("{}", msg));
+                    self.game_state.cancel_pickup();
+                }
             }
         }
     }
@@ -208,6 +235,44 @@ impl GameManager {
         self.hover_state = HoverState::None;
         self.animation_manager.stop_animation();
         self.win_popup.hide();
+    }
+
+    pub fn find_valid_moves(&self, selection: &Selection) -> Vec<crate::game_objects::Selection> {
+        let mut valid_moves = Vec::new();
+        let board = self.game_state.board();
+
+        let Some(card) = board.get_card_at_selection(selection) else {
+            return valid_moves;
+        };
+
+        // If card is the last in the pile then check foundation
+        if let Some(pile) = board.get_pile(selection.pile, selection.pile_index) && selection.card_index == pile.len() - 1 {
+            for i in 0..4 {
+                if let Some(pile) = board.get_foundation_pile(i) {
+                    if pile.can_place_card(card) {
+                        valid_moves.push(crate::game_objects::Selection::new(
+                            crate::game_objects::PileType::Foundation,
+                            i,
+                            pile.len()
+                        ));
+                    }
+                }
+            }
+        } 
+
+        for i in 0..7 {
+            if let Some(pile) = board.get_tableau_pile(i) {
+                if pile.can_place_card(card) {
+                    valid_moves.push(crate::game_objects::Selection::new(
+                        crate::game_objects::PileType::Tableau,
+                        i,
+                        pile.len()
+                    ));
+                }
+            }
+        }
+
+        valid_moves
     }
 
     pub fn draw(&mut self, frame: &mut Frame) {

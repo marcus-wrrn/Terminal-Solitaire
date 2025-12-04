@@ -1,4 +1,4 @@
-use crate::game_objects::{Deck, Pile, PileType};
+use crate::game_objects::{Card, Deck, Pile, PileType, Selection};
 
 pub struct Board {
     pub tableau: [Pile; 7],
@@ -187,14 +187,22 @@ impl Board {
         Err("No valid card in stock for this foundation")
     }
 
-    // pub fn get_all_cards(&self) -> Vec<&Card> {
-    //   self.tableau.iter()
-    //       .chain(self.foundation.iter())
-    //       .chain(std::iter::once(&self.stock))
-    //       .chain(std::iter::once(&self.waste))
-    //       .flat_map(|pile| pile.cards.iter())
-    //       .collect()
-    // }
+    pub fn get_card_at_selection(&self, selection: &Selection) -> Option<&Card> {
+        if let Some(pile) = self.get_pile(selection.pile, selection.pile_index) {
+            return pile.cards.get(selection.card_index);
+        }
+        None
+    }
+
+    pub fn get_pile(&self, pile_type: PileType, pile_index: usize) -> Option<&Pile> {
+        let pile = match pile_type {
+            PileType::Tableau => self.tableau.get(pile_index)?,
+            PileType::Foundation => self.foundation.get(pile_index)?,
+            PileType::Stock => &self.stock,
+            PileType::Waste => &self.waste
+        };
+        Some(pile)
+    }
 }
 
 impl Default for Board {
