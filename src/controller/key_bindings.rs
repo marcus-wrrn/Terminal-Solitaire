@@ -50,6 +50,8 @@ pub struct KeyBindings {
 
     /// Key to show help
     pub help: KeyCode,
+
+    pub open_menu: KeyCode
 }
 
 impl Default for KeyBindings {
@@ -71,6 +73,7 @@ impl Default for KeyBindings {
             undo: KeyCode::Char('u'),
             restart: KeyCode::Char('r'),
             help: KeyCode::Char('h'),
+            open_menu: KeyCode::Char('m'),
         }
     }
 }

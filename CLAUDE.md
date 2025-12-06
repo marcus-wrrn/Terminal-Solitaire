@@ -12,7 +12,7 @@ Do not abuse comments
 ### Game Objects Module (`src/game_objects/`)
 Pure data structures representing game entities. This module has no dependencies on game logic or rendering.
 
-- `mod.rs` - Module declaration file that re-exports all game object types
+- `mod.rs` - re-exports all game object types
 - `card.rs` - Defines Card struct with Suit and Rank enums, color checking, and display formatting
 - `deck.rs` - Standard n-card deck implementation with shuffle and draw functionality
 - `pile.rs` - Pile struct with placement rules for Tableau, Foundation, Stock, and Waste piles
@@ -21,30 +21,41 @@ Pure data structures representing game entities. This module has no dependencies
 - `tests.rs` - Unit tests for Card, Deck, and Pile structs
 
 ### Game Logic Module (`src/game_logic/`)
-Orchestrates game state and manages game mechanics. Depends on game_objects but not vice versa.
+Orchestrates game state and manages game mechanics. Depends on game_objects and rendering but not vice versa.
 
-- `mod.rs` - Module declaration file that re-exports GameState and GameManager
+- `mod.rs` - re-exports GameState, GameManager, SelectionNavigator, AnimationManager, HoverState, MenuManager, and MenuAction
 - `game_state.rs` - GameState struct that holds the board and current selection, handles selection state updates
 - `game_manager.rs` - GameManager struct that runs the main game loop, processes input, and coordinates rendering
+- `selection_navigator.rs` - SelectionNavigator handles keyboard-based navigation and movement of the selection cursor across different pile types
+- `animation_manager.rs` - AnimationManager handles win animations and auto-play sequences when game is won or all tableau cards are face up
+- `hover_state.rs` - HoverState enum representing mouse hover states (Valid, Invalid, or None)
+- `menu_manager.rs` - MenuManager coordinates the options menu and victory screen, processes menu actions
 
 ### Rendering Module (`src/rendering`)
+Renders game objects 
+
 Rendering Pipeline GameRenderer->BoardRenderer->PileRenderer->CardRenderer
 
-- `mod.rs` - Module declaration file that re-exports GameRenderer and BoardRenderer
+- `mod.rs` - re-exports GameRenderer and BoardRenderer
 - `game_renderer.rs` - Main game renderer that coordinates title, board, and debug log display
 - `board_renderer.rs` - Renders the full board
 - `pile_renderer.rs` - Renders cards, determines if card to be rendered is selected
 - `card_renderer.rs` - Renders single Card
 
 ### Controller Module (`src/controller`)
-- `mod.rs` - Module declaration file that re-exports KeyBindings, Controller, and GameAction
+Handles game input
+
+- `mod.rs` - re-exports KeyBindings, Controller, and GameAction
 - `controller.rs` - Controller struct that handles user input (both mouse + keyboard) and maps to GameActions
 - `key_bindings.rs` - Rebindable keybinds used by Controller
 
 ### UI Module (`src/ui`)
-- `mod.rs` - Module declaration file that re-exports DebugLog
+- `mod.rs` - re-exports DebugLog, OptionsMenu, MenuOption, and WinPopup
 - `debug.rs` - DebugLog component for displaying debug messages in the UI
-- `win_popup.rs` - Popup window with configurable content
+- `options_menu.rs` - OptionsMenu widget displaying game options (Restart, Rebind Keys, Help, Developer Mode)
+- `popups/` - Submodule containing specialized popup screens
+  - `mod.rs` - re-exports VictoryScreen
+  - `victory_popup.rs` - VictoryScreen widget displayed when the player wins the game
 
 ## Dependencies (from Cargo.toml)
 

@@ -44,6 +44,8 @@ pub enum GameAction {
     /// Confirm/execute the current action
     Enter,
 
+    OpenMenu,
+
     /// Cancel the current selection
     Cancel,
 
@@ -98,7 +100,6 @@ pub enum GameAction {
     LeftMousePress(u16, u16),
 
     Click,
-
     /// No action (for unbound keys)
     None,
 }
@@ -280,6 +281,8 @@ impl Controller {
             GameAction::Restart
         } else if code == bindings.help {
             GameAction::Help
+        } else if code == bindings.open_menu {
+            GameAction::OpenMenu
         } else {
             GameAction::None
         }

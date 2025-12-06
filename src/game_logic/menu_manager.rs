@@ -1,15 +1,18 @@
-use crate::ui::{OptionsMenu, MenuOption};
+use crate::ui::{OptionsMenu, MenuOption, popups::VictoryScreen};
+use crate::game_logic::GameState;
 use crate::controller::GameAction;
 use ratatui::{buffer::Buffer, layout::Rect};
 
 pub struct MenuManager {
     options_menu: OptionsMenu,
+    victory_screen: VictoryScreen,
 }
 
 impl MenuManager {
     pub fn new() -> Self {
         Self {
             options_menu: OptionsMenu::new(),
+            victory_screen: VictoryScreen::new()
         }
     }
 
@@ -26,7 +29,7 @@ impl MenuManager {
             return None;
         }
 
-        match action {
+        let menu_action = match action {
             GameAction::Quit | GameAction::Cancel | GameAction::Help => {
                 self.options_menu.hide();
                 Some(MenuAction::CloseMenu)
@@ -45,13 +48,27 @@ impl MenuManager {
                 Some(MenuAction::OptionSelected(selected))
             }
             _ => None,
+        };
+
+        return menu_action;
+    }
+
+    pub fn handle_game_state(&mut self, game_state: &GameState) {
+        if game_state.has_won() {
+            self.victory_screen.show();
         }
     }
 
     pub fn render(&self, area: Rect, buf: &mut Buffer) {
+        if self.victory_screen.is_visible() {
+            self.victory_screen.render(area, buf);
+        }
+
+        // Options menu always displayed last
         if self.options_menu.is_visible() {
             self.options_menu.render(area, buf);
         }
+
     }
 }
 
