@@ -75,7 +75,7 @@ impl GameManager {
                         GameAction::Restart => {
                             self.restart_game();
                         }
-                        GameAction::Help => {
+                        GameAction::OptionsMenu => {
                             self.menu_manager.toggle_options_menu();
                         }
                         GameAction::LeftMousePress(x, y) => {

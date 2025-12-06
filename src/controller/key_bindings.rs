@@ -49,7 +49,7 @@ pub struct KeyBindings {
     pub restart: KeyCode,
 
     /// Key to show help
-    pub help: KeyCode,
+    pub options_menu: KeyCode,
 
     pub open_menu: KeyCode
 }
@@ -60,7 +60,7 @@ impl Default for KeyBindings {
             quit: KeyCode::Char('q'),
             select: KeyCode::Char(' '),
             enter: KeyCode::Enter,
-            cancel: KeyCode::Esc,
+            cancel: KeyCode::Char('x'),
             move_left: KeyCode::Left,
             move_right: KeyCode::Right,
             move_up: KeyCode::Up,
@@ -72,7 +72,7 @@ impl Default for KeyBindings {
             draw_stock: KeyCode::Char('d'),
             undo: KeyCode::Char('u'),
             restart: KeyCode::Char('r'),
-            help: KeyCode::Char('h'),
+            options_menu: KeyCode::Esc,
             open_menu: KeyCode::Char('m'),
         }
     }

@@ -1,9 +1,9 @@
 use ratatui::{
     buffer::Buffer,
     layout::{Constraint, Flex, Layout, Rect},
-    style::{Color, Style, Modifier},
+    style::{Color, Modifier, Style},
     text::{Line, Span},
-    widgets::{Block, Borders, Clear, List, ListItem, Widget},
+    widgets::{Block, Borders, Clear, List, ListItem, Padding, Widget},
 };
 
 #[derive(Debug, Clone, Copy, PartialEq)]
@@ -81,7 +81,7 @@ impl OptionsMenu {
             return;
         }
 
-        let popup_area = Self::centered_rect(50, 40, area);
+        let popup_area = Self::centered_rect(40, 12, area);
 
         Clear.render(popup_area, buf);
 
@@ -113,25 +113,26 @@ impl OptionsMenu {
                 Block::default()
                     .borders(Borders::ALL)
                     .title("Options Menu")
+                    .padding(Padding::uniform(2))
                     .style(Style::default().fg(Color::Cyan))
             );
 
         list.render(popup_area, buf);
     }
 
-    fn centered_rect(percent_x: u16, percent_y: u16, area: Rect) -> Rect {
+    fn centered_rect(width: u16, height: u16, area: Rect) -> Rect {
         let popup_layout = Layout::vertical([
-            Constraint::Percentage((100 - percent_y) / 2),
-            Constraint::Percentage(percent_y),
-            Constraint::Percentage((100 - percent_y) / 2),
+            Constraint::Fill(1),
+            Constraint::Length(height),
+            Constraint::Fill(1),
         ])
         .flex(Flex::Center)
         .split(area);
 
         Layout::horizontal([
-            Constraint::Percentage((100 - percent_x) / 2),
-            Constraint::Percentage(percent_x),
-            Constraint::Percentage((100 - percent_x) / 2),
+            Constraint::Fill(1),
+            Constraint::Length(width),
+            Constraint::Fill(1),
         ])
         .flex(Flex::Center)
         .split(popup_layout[1])[1]

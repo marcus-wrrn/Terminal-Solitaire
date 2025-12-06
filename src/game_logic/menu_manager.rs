@@ -30,7 +30,7 @@ impl MenuManager {
         }
 
         let menu_action = match action {
-            GameAction::Quit | GameAction::Cancel | GameAction::Help => {
+            GameAction::Quit | GameAction::Cancel | GameAction::OptionsMenu => {
                 self.options_menu.hide();
                 Some(MenuAction::CloseMenu)
             }

@@ -83,7 +83,7 @@ pub enum GameAction {
     Restart,
 
     /// Show help menu
-    Help,
+    OptionsMenu,
 
     /// Start dragging cards from a position
     StartDrag(u16, u16),
@@ -279,8 +279,8 @@ impl Controller {
             GameAction::Undo
         } else if code == bindings.restart {
             GameAction::Restart
-        } else if code == bindings.help {
-            GameAction::Help
+        } else if code == bindings.options_menu {
+            GameAction::OptionsMenu
         } else if code == bindings.open_menu {
             GameAction::OpenMenu
         } else {
