@@ -1,5 +1,6 @@
 use crate::game_objects::{Board, Pile, PileType, Selection};
 use crate::game_logic::HoverState;
+use crate::rendering::render_instructions::BoardRenderingIntr;
 use crate::rendering::{card_renderer::CardRenderer, pile_renderer::PileRenderer};
 use ratatui::{
     buffer::Buffer,
@@ -34,9 +35,7 @@ impl BoardRenderer {
     /// Renders the complete board with hover highlighting
     pub fn render(
         &mut self, 
-        board: &Board, 
-        selection: &Selection, 
-        hover_state: &HoverState, 
+        instr: &BoardRenderingIntr,
         buf: &mut Buffer, 
         area: Rect
     ) {
@@ -63,10 +62,10 @@ impl BoardRenderer {
         .split(vertical_sections[0]);
 
         //self.render_stock_and_waste(board, selection, hover_state, buf, top_row_sections[0], top_row_sections[1]);
-        self.render_pile(Some("Stock"), &board.stock, 0, selection, hover_state, top_row_sections[0], buf);
-        self.render_pile(Some("Waste"), &board.waste, 0, selection, hover_state, top_row_sections[1], buf);
+        self.render_pile(Some("Stock"), &instr.board.stock, 0, instr.selection, instr.hover_state, top_row_sections[0], buf);
+        self.render_pile(Some("Waste"), &instr.board.waste, 0, instr.selection, instr.hover_state, top_row_sections[1], buf);
 
-        self.render_foundations(board, selection, hover_state, buf, &top_row_sections[3..7]);
+        self.render_foundations(instr.board, instr.selection, instr.hover_state, buf, &top_row_sections[3..7]);
 
         let tableau_sections = Layout::horizontal([
             Constraint::Length(CardRenderer::WIDTH),
@@ -81,7 +80,7 @@ impl BoardRenderer {
         .flex(Flex::Center)
         .split(vertical_sections[2]);
 
-        self.render_tableau(board, selection, hover_state, buf, &tableau_sections);
+        self.render_tableau(instr.board, instr.selection, instr.hover_state, buf, &tableau_sections);
     }
 
     fn render_foundations(&mut self, board: &Board, selection: &Selection, hover_state: &HoverState, buf: &mut Buffer, foundation_areas: &[Rect]) {

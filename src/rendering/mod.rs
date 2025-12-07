@@ -1,7 +1,8 @@
 pub mod card_renderer;
 pub mod pile_renderer;
 pub mod board_renderer;
+pub mod render_instructions;
 mod game_renderer;
 
 pub use game_renderer::GameRenderer;
-pub use board_renderer::BoardRenderer;
+pub use render_instructions::RenderingInstructions;

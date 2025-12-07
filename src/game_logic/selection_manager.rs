@@ -51,7 +51,7 @@ impl SelectionManager {
         self.visible = visible;
     }
 
-    // Navigation methods (integrated from SelectionNavigator)
+    // Navigation methods for keyboard control
 
     pub fn move_left(&mut self, board: &Board) {
         self.selection = match self.selection.pile {

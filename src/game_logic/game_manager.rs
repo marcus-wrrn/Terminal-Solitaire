@@ -1,6 +1,6 @@
 use crate::game_logic::{GameState, SelectionManager, AnimationManager, HoverState, MenuManager, MenuAction};
 use crate::game_objects::Selection;
-use crate::rendering::{GameRenderer, BoardRenderer};
+use crate::rendering::{GameRenderer, RenderingInstructions};
 use crate::controller::{Controller, GameAction};
 use crate::ui::{DebugLog, MenuOption};
 use ratatui::{DefaultTerminal, Frame};
@@ -11,7 +11,7 @@ pub struct GameManager {
     selection_manager: SelectionManager,
     controller: Controller,
     debug_log: DebugLog,
-    board_renderer: BoardRenderer,
+    game_renderer: GameRenderer,
     hover_state: HoverState,
     menu_manager: MenuManager,
     animation_manager: AnimationManager,
@@ -24,7 +24,7 @@ impl GameManager {
             selection_manager: SelectionManager::new(),
             controller: Controller::new(),
             debug_log: DebugLog::default(),
-            board_renderer: BoardRenderer::new(),
+            game_renderer: GameRenderer::new(),
             hover_state: HoverState::None,
             menu_manager: MenuManager::new(),
             // win_popup,
@@ -37,6 +37,12 @@ impl GameManager {
             terminal.draw(|frame| self.draw(frame))?;
             self.animation_manager.process_game_state(&mut self.game_state, &mut self.debug_log);
             self.menu_manager.handle_game_state(&self.game_state);
+
+            if self.controller.is_keyboard_mode() {
+                self.selection_manager.set_visible(true);
+            } else {
+                self.selection_manager.set_visible(false);
+            }
 
             if let Some(action) = self.controller.poll_action()? {
                 if self.menu_manager.is_menu_active() {
@@ -126,7 +132,7 @@ impl GameManager {
     }
 
     fn handle_left_mouse_press(&mut self, x: u16, y: u16) {
-        if let Some(selection) = self.board_renderer.coordinate_to_selection(self.game_state.board(), x, y) {
+        if let Some(selection) = self.game_renderer.coordinate_to_selection(self.game_state.board(), x, y) {
             self.selection_manager.set_selection(selection);
         }
     }
@@ -154,7 +160,7 @@ impl GameManager {
     }
 
     fn handle_start_drag(&mut self, x: u16, y: u16) {
-        if let Some(selection) = self.board_renderer.coordinate_to_selection(self.game_state.board(), x, y) {
+        if let Some(selection) = self.game_renderer.coordinate_to_selection(self.game_state.board(), x, y) {
             self.selection_manager.set_selection(selection);
             if let Err(msg) = self.game_state.pick_up_cards(selection) {
                 self.debug_log.log(format!("{}", msg));
@@ -172,14 +178,17 @@ impl GameManager {
 
     fn handle_update_drag(&mut self, x: u16, y: u16) {
         if self.selection_manager.has_picked_up() {
-            if let Some(target) = self.board_renderer.coordinate_to_selection(self.game_state.board(), x, y) {
-                let source = self.selection_manager.picked_up().unwrap();
+            if let Some(target) = self.game_renderer.coordinate_to_selection(self.game_state.board(), x, y) {
+                let Some(source) = self.selection_manager.picked_up() else {
+                    self.debug_log.log("Error: selection not found for dragging");
+                    return;
+                };
                 let is_valid = self.game_state.is_valid_placement(source, target);
                 self.hover_state = if is_valid {
                     HoverState::Valid(target)
                 } else {
                     HoverState::Invalid(target)
-                };
+                }
             } else {
                 self.hover_state = HoverState::None;
             }
@@ -187,12 +196,15 @@ impl GameManager {
     }
 
     fn handle_complete_drag(&mut self, x: u16, y: u16) {
-        if let Some(target) = self.board_renderer.coordinate_to_selection(self.game_state.board(), x, y) {
+        if let Some(target) = self.game_renderer.coordinate_to_selection(self.game_state.board(), x, y) {
             if target.pile == crate::game_objects::PileType::Stock && !self.selection_manager.has_picked_up() {
                 self.handle_stock_click();
             } else if self.selection_manager.has_picked_up() {
                 self.selection_manager.set_selection(target);
-                let source = self.selection_manager.picked_up().unwrap();
+                let Some(source) = self.selection_manager.picked_up() else {
+                    self.debug_log.log("Could not find picked up card for drag");
+                    return;
+                };
                 if let Err(val) = self.game_state.place_cards(source, target) {
                     self.debug_log.log(format!("{}", val));
                 } else {
@@ -276,15 +288,15 @@ impl GameManager {
 
     pub fn draw(&mut self, frame: &mut Frame) {
         let selection = self.selection_manager.selection();
-        let game_renderer = GameRenderer::new(
+        let rendering_instr = RenderingInstructions::new(
             self.game_state.board(),
             &selection,
+            self.selection_manager.is_visible(),
             &self.hover_state,
-            &self.debug_log,
-            &mut self.board_renderer
+            &self.debug_log
         );
 
-        frame.render_widget(game_renderer, frame.area());
+        self.game_renderer.render(frame.area(), frame.buffer_mut(), &rendering_instr);
 
         self.menu_manager.render(frame.area(), frame.buffer_mut());
     }

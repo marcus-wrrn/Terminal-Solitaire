@@ -184,6 +184,10 @@ impl Controller {
         }
     }
 
+    pub fn is_keyboard_mode(&self) -> bool {
+        self.control_mode == ControlMode::Keyboard
+    }
+
     fn handle_mouse_action(&mut self, mouse: event::MouseEvent) -> Option<GameAction> {
         self.control_mode = ControlMode::Mouse;
 

@@ -1,37 +1,25 @@
+use crate::rendering::RenderingInstructions;
 use crate::game_objects::{Board, Selection};
-use crate::game_logic::HoverState;
-use crate::ui::DebugLog;
 use super::board_renderer::BoardRenderer;
 use ratatui::{
     buffer::Buffer,
     layout::{Constraint, Flex, Layout, Rect},
     style::{Color, Style},
-    widgets::Widget,
 };
 
-pub struct GameRenderer<'a> {
-    board: &'a Board,
-    selection: &'a Selection,
-    hover_state: &'a HoverState,
-    debug_log: &'a DebugLog,
-    board_renderer: &'a mut BoardRenderer,
+pub struct GameRenderer {
+    board_renderer: BoardRenderer
 }
 
-impl<'a> GameRenderer<'a> {
-    pub fn new(
-        board: &'a Board,
-        selection: &'a Selection,
-        hover_state: &'a HoverState,
-        debug_log: &'a DebugLog,
-        board_renderer: &'a mut BoardRenderer
-    ) -> Self {
+impl GameRenderer {
+    pub fn new() -> Self {
         Self {
-            board,
-            selection,
-            hover_state,
-            debug_log,
-            board_renderer,
+            board_renderer: BoardRenderer::new(),
         }
+    }
+
+    pub fn coordinate_to_selection(&self, board: &Board, x: u16, y: u16) -> Option<Selection> {
+        self.board_renderer.coordinate_to_selection(board, x, y)
     }
 
     fn render_centered_text(&self, buf: &mut Buffer, area: Rect, text: &str, style: Style) {
@@ -41,10 +29,8 @@ impl<'a> GameRenderer<'a> {
             buf.set_string(x, y, text, style);
         }
     }
-}
 
-impl<'a> Widget for GameRenderer<'a> {
-    fn render(self, area: Rect, buf: &mut Buffer) {
+    pub fn render(&mut self, area: Rect, buf: &mut Buffer, render_instr: &RenderingInstructions) {
         let vertical_sections = Layout::vertical([
             Constraint::Length(1),  // Title
             Constraint::Length(1),  // Spacing
@@ -61,8 +47,8 @@ impl<'a> Widget for GameRenderer<'a> {
             Style::default().fg(Color::Yellow),
         );
 
-        self.board_renderer.render(self.board, self.selection, self.hover_state, buf, vertical_sections[2]);
+        self.board_renderer.render(&render_instr.board_rendering_instr, buf, vertical_sections[2]);
 
-        self.debug_log.render(vertical_sections[3], buf);
+        render_instr.debug_log.render(vertical_sections[3], buf);
     }
 }
