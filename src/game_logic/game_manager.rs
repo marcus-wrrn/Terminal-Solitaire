@@ -1,4 +1,4 @@
-use crate::game_logic::{GameState, SelectionNavigator, AnimationManager, HoverState, MenuManager, MenuAction};
+use crate::game_logic::{GameState, SelectionManager, AnimationManager, HoverState, MenuManager, MenuAction};
 use crate::game_objects::Selection;
 use crate::rendering::{GameRenderer, BoardRenderer};
 use crate::controller::{Controller, GameAction};
@@ -8,12 +8,12 @@ use std::io;
 
 pub struct GameManager {
     game_state: GameState,
+    selection_manager: SelectionManager,
     controller: Controller,
     debug_log: DebugLog,
     board_renderer: BoardRenderer,
     hover_state: HoverState,
     menu_manager: MenuManager,
-    // win_popup: WinPopup,
     animation_manager: AnimationManager,
 }
 
@@ -21,6 +21,7 @@ impl GameManager {
     pub fn new() -> Self {
         Self {
             game_state: GameState::new(),
+            selection_manager: SelectionManager::new(),
             controller: Controller::new(),
             debug_log: DebugLog::default(),
             board_renderer: BoardRenderer::new(),
@@ -46,26 +47,22 @@ impl GameManager {
                     match action {
                         GameAction::Quit => break,
                         GameAction::MoveLeft => {
-                            let new_selection = SelectionNavigator::move_left(self.game_state.board(), self.game_state.selection());
-                            self.game_state.set_selection(new_selection);
+                            self.selection_manager.move_left(self.game_state.board());
                         }
                         GameAction::MoveRight => {
-                            let new_selection = SelectionNavigator::move_right(self.game_state.board(), self.game_state.selection());
-                            self.game_state.set_selection(new_selection);
+                            self.selection_manager.move_right(self.game_state.board());
                         }
                         GameAction::MoveUp => {
-                            let new_selection = SelectionNavigator::move_up(self.game_state.board(), self.game_state.selection());
-                            self.game_state.set_selection(new_selection);
+                            self.selection_manager.move_up(self.game_state.board());
                         }
                         GameAction::MoveDown => {
-                            let new_selection = SelectionNavigator::move_down(self.game_state.board(), self.game_state.selection());
-                            self.game_state.set_selection(new_selection);
+                            self.selection_manager.move_down(self.game_state.board());
                         }
                         GameAction::Select | GameAction::Enter => {
                             self.handle_select_action();
                         }
                         GameAction::Cancel => {
-                            self.game_state.cancel_pickup();
+                            self.selection_manager.cancel_pickup();
                         }
                         GameAction::DrawStock => {
                             let _ = self.game_state.draw_from_stock();
@@ -94,7 +91,7 @@ impl GameManager {
                             self.handle_complete_drag(x, y);
                         }
                         GameAction::CancelDrag => {
-                            self.game_state.cancel_pickup();
+                            self.selection_manager.cancel_pickup();
                             self.hover_state = HoverState::None;
                         }
                         GameAction::OpenMenu => {
@@ -110,35 +107,47 @@ impl GameManager {
     }
 
     fn handle_select_action(&mut self) {
-        if self.game_state.has_picked_up_cards() {
-            if let Err(msg) = self.game_state.place_cards() {
+        if self.selection_manager.has_picked_up() {
+            let source = self.selection_manager.picked_up().unwrap();
+            let target = self.selection_manager.selection();
+            if let Err(msg) = self.game_state.place_cards(source, target) {
                 self.debug_log.log(format!("{}", msg));
+            } else {
+                self.selection_manager.place();
             }
         } else {
-            if let Err(msg) = self.game_state.pick_up_cards() {
+            let selection = self.selection_manager.selection();
+            if let Err(msg) = self.game_state.pick_up_cards(selection) {
                 self.debug_log.log(format!("{}", msg));
+            } else {
+                self.selection_manager.pick_up();
             }
         }
     }
 
     fn handle_left_mouse_press(&mut self, x: u16, y: u16) {
         if let Some(selection) = self.board_renderer.coordinate_to_selection(self.game_state.board(), x, y) {
-            self.game_state.set_selection(selection);
+            self.selection_manager.set_selection(selection);
         }
     }
 
     fn handle_click(&mut self) {
-        let selection = self.game_state.selection();
+        let selection = self.selection_manager.selection();
         let moves = self.find_valid_moves(&selection);
 
         if let Some(first_move) = moves.first() {
-            if let Err(msg) = self.game_state.pick_up_cards() {
+            if let Err(msg) = self.game_state.pick_up_cards(selection) {
                 self.debug_log.log(format!("{}", msg));
             } else {
-                self.game_state.set_selection(*first_move);
-                if let Err(msg) = self.game_state.place_cards() {
+                self.selection_manager.pick_up();
+                self.selection_manager.set_selection(*first_move);
+                let source = self.selection_manager.picked_up().unwrap();
+                let target = self.selection_manager.selection();
+                if let Err(msg) = self.game_state.place_cards(source, target) {
                     self.debug_log.log(format!("{}", msg));
-                    self.game_state.cancel_pickup();
+                    self.selection_manager.cancel_pickup();
+                } else {
+                    self.selection_manager.place();
                 }
             }
         }
@@ -146,9 +155,11 @@ impl GameManager {
 
     fn handle_start_drag(&mut self, x: u16, y: u16) {
         if let Some(selection) = self.board_renderer.coordinate_to_selection(self.game_state.board(), x, y) {
-            self.game_state.set_selection(selection);
-            if let Err(msg) = self.game_state.pick_up_cards() {
+            self.selection_manager.set_selection(selection);
+            if let Err(msg) = self.game_state.pick_up_cards(selection) {
                 self.debug_log.log(format!("{}", msg));
+            } else {
+                self.selection_manager.pick_up();
             }
         }
     }
@@ -160,9 +171,10 @@ impl GameManager {
     }
 
     fn handle_update_drag(&mut self, x: u16, y: u16) {
-        if self.game_state.has_picked_up_cards() {
+        if self.selection_manager.has_picked_up() {
             if let Some(target) = self.board_renderer.coordinate_to_selection(self.game_state.board(), x, y) {
-                let is_valid = self.game_state.is_valid_placement(&target);
+                let source = self.selection_manager.picked_up().unwrap();
+                let is_valid = self.game_state.is_valid_placement(source, target);
                 self.hover_state = if is_valid {
                     HoverState::Valid(target)
                 } else {
@@ -176,18 +188,21 @@ impl GameManager {
 
     fn handle_complete_drag(&mut self, x: u16, y: u16) {
         if let Some(target) = self.board_renderer.coordinate_to_selection(self.game_state.board(), x, y) {
-            if target.pile == crate::game_objects::PileType::Stock && !self.game_state.has_picked_up_cards() {
+            if target.pile == crate::game_objects::PileType::Stock && !self.selection_manager.has_picked_up() {
                 self.handle_stock_click();
-            } else if self.game_state.has_picked_up_cards() {
-                self.game_state.set_selection(target);
-                if let Err(val) = self.game_state.place_cards() {
+            } else if self.selection_manager.has_picked_up() {
+                self.selection_manager.set_selection(target);
+                let source = self.selection_manager.picked_up().unwrap();
+                if let Err(val) = self.game_state.place_cards(source, target) {
                     self.debug_log.log(format!("{}", val));
+                } else {
+                    self.selection_manager.place();
                 }
             }
         }
 
-        if self.game_state.has_picked_up_cards() {
-            self.game_state.cancel_pickup();
+        if self.selection_manager.has_picked_up() {
+            self.selection_manager.cancel_pickup();
         }
         self.hover_state = HoverState::None;
     }
@@ -213,6 +228,7 @@ impl GameManager {
 
     fn restart_game(&mut self) {
         self.game_state = GameState::new();
+        self.selection_manager = SelectionManager::new();
         self.debug_log.clear();
         self.hover_state = HoverState::None;
         self.animation_manager.stop_animation();
@@ -259,7 +275,7 @@ impl GameManager {
     }
 
     pub fn draw(&mut self, frame: &mut Frame) {
-        let selection = self.game_state.selection();
+        let selection = self.selection_manager.selection();
         let game_renderer = GameRenderer::new(
             self.game_state.board(),
             &selection,

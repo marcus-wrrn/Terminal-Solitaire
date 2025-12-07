@@ -2,8 +2,6 @@ use crate::game_objects::{Board, Deck, PileType, Selection};
 
 pub struct GameState {
     board: Board,
-    selection: Selection,
-    picked_up: Option<Selection>,
 }
 
 impl GameState {
@@ -16,8 +14,6 @@ impl GameState {
 
         Self {
             board,
-            selection: Selection::new(PileType::Tableau, 0, 0),
-            picked_up: None,
         }
     }
 
@@ -29,20 +25,8 @@ impl GameState {
         &mut self.board
     }
 
-    pub fn selection(&self) -> Selection {
-        self.selection
-    }
-
-    pub fn set_selection(&mut self, selection: Selection) {
-        self.selection = selection;
-    }
-
-    pub fn pick_up_cards(&mut self) -> Result<(), &'static str> {
-        if self.picked_up.is_some() {
-            return Err("Already holding cards");
-        }
-
-        let current_selection = self.selection;
+    pub fn pick_up_cards(&mut self, selection: Selection) -> Result<(), &'static str> {
+        let current_selection = selection;
 
         match current_selection.pile {
             PileType::Tableau => {
@@ -55,7 +39,6 @@ impl GameState {
                             return Err("Cannot pick up face-down card");
                         }
                     }
-                    self.picked_up = Some(current_selection);
                     Ok(())
                 } else {
                     Err("Invalid pile")
@@ -65,7 +48,6 @@ impl GameState {
                 if self.board.waste.is_empty() {
                     return Err("No card in waste pile");
                 }
-                self.picked_up = Some(current_selection);
                 Ok(())
             }
             PileType::Foundation => {
@@ -73,7 +55,6 @@ impl GameState {
                     if pile.is_empty() {
                         return Err("No card in foundation pile");
                     }
-                    self.picked_up = Some(current_selection);
                     Ok(())
                 } else {
                     Err("Invalid pile")
@@ -86,12 +67,8 @@ impl GameState {
         }
     }
 
-    pub fn place_cards(&mut self) -> Result<(), &'static str> {
-        let source = self.picked_up.ok_or("No cards picked up")?;
-        let target = self.selection;
-
+    pub fn place_cards(&mut self, source: Selection, target: Selection) -> Result<(), &'static str> {
         if source == target {
-            self.picked_up = None;
             return Ok(());
         }
 
@@ -102,7 +79,6 @@ impl GameState {
                     target.pile_index,
                     source.card_index
                 )?;
-                self.picked_up = None;
                 Ok(())
             }
             (PileType::Tableau, PileType::Foundation) => {
@@ -112,17 +88,14 @@ impl GameState {
                     }
                 }
                 self.board.move_card_to_foundation(source.pile_index, target.pile_index)?;
-                self.picked_up = None;
                 Ok(())
             }
             (PileType::Waste, PileType::Tableau) => {
                 self.board.move_waste_to_tableau(target.pile_index)?;
-                self.picked_up = None;
                 Ok(())
             }
             (PileType::Waste, PileType::Foundation) => {
                 self.board.move_waste_to_foundation(target.pile_index)?;
-                self.picked_up = None;
                 Ok(())
             }
             (PileType::Foundation, PileType::Tableau) => {
@@ -132,14 +105,6 @@ impl GameState {
                 Err("Invalid move")
             }
         }
-    }
-
-    pub fn cancel_pickup(&mut self) {
-        self.picked_up = None;
-    }
-
-    pub fn has_picked_up_cards(&self) -> bool {
-        self.picked_up.is_some()
     }
 
     pub fn draw_from_stock(&mut self) -> Result<(), &'static str> {
@@ -165,13 +130,8 @@ impl GameState {
         })
     }
 
-    pub fn is_valid_placement(&self, target: &Selection) -> bool {
-        let source = match self.picked_up {
-            Some(s) => s,
-            None => return false,
-        };
-
-        if source == *target {
+    pub fn is_valid_placement(&self, source: Selection, target: Selection) -> bool {
+        if source == target {
             return true;
         }
 

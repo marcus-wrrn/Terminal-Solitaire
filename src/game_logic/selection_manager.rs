@@ -1,28 +1,77 @@
 use crate::game_objects::{Board, PileType, Selection};
 
-pub struct SelectionNavigator;
+pub struct SelectionManager {
+    selection: Selection,
+    picked_up: Option<Selection>,
+    visible: bool,
+}
 
-/// Handles the movement of the selection cursor using keyboard controls
-impl SelectionNavigator {
-    pub fn move_left(board: &Board, current: Selection) -> Selection {
-        match current.pile {
+impl SelectionManager {
+    pub fn new() -> Self {
+        Self {
+            selection: Selection::new(PileType::Tableau, 0, 0),
+            picked_up: None,
+            visible: true,
+        }
+    }
+
+    pub fn selection(&self) -> Selection {
+        self.selection
+    }
+
+    pub fn set_selection(&mut self, selection: Selection) {
+        self.selection = selection;
+    }
+
+    pub fn picked_up(&self) -> Option<Selection> {
+        self.picked_up
+    }
+
+    pub fn has_picked_up(&self) -> bool {
+        self.picked_up.is_some()
+    }
+
+    pub fn pick_up(&mut self) {
+        self.picked_up = Some(self.selection);
+    }
+
+    pub fn place(&mut self) {
+        self.picked_up = None;
+    }
+
+    pub fn cancel_pickup(&mut self) {
+        self.picked_up = None;
+    }
+
+    pub fn is_visible(&self) -> bool {
+        self.visible
+    }
+
+    pub fn set_visible(&mut self, visible: bool) {
+        self.visible = visible;
+    }
+
+    // Navigation methods (integrated from SelectionNavigator)
+
+    pub fn move_left(&mut self, board: &Board) {
+        self.selection = match self.selection.pile {
             PileType::Tableau => {
-                if current.pile_index > 0 {
-                    let next_pile_index = current.pile_index - 1;
+                if self.selection.pile_index > 0 {
+                    let next_pile_index = self.selection.pile_index - 1;
                     let topmost = Self::get_topmost_card_index(board, PileType::Tableau, next_pile_index);
-                    let card_index = if current.card_index <= topmost {
-                        current.card_index
+                    let card_index = if self.selection.card_index <= topmost {
+                        self.selection.card_index
                     } else {
                         topmost
                     };
                     Selection::new(PileType::Tableau, next_pile_index, card_index)
                 } else {
-                    current
+                    self.selection
                 }
             }
             PileType::Foundation => {
-                if current.pile_index > 0 {
-                    let next_pile_index = current.pile_index - 1;
+                if self.selection.pile_index > 0 {
+                    let next_pile_index = self.selection.pile_index - 1;
                     let card_index = Self::get_topmost_card_index(board, PileType::Foundation, next_pile_index);
                     Selection::new(PileType::Foundation, next_pile_index, card_index)
                 } else {
@@ -34,32 +83,32 @@ impl SelectionNavigator {
                 let card_index = Self::get_topmost_card_index(board, PileType::Stock, 0);
                 Selection::new(PileType::Stock, 0, card_index)
             }
-            PileType::Stock => current,
-        }
+            PileType::Stock => self.selection,
+        };
     }
 
-    pub fn move_right(board: &Board, current: Selection) -> Selection {
-        match current.pile {
+    pub fn move_right(&mut self, board: &Board) {
+        self.selection = match self.selection.pile {
             PileType::Tableau => {
-                if current.pile_index < 6 {
-                    let next_pile_index = current.pile_index + 1;
+                if self.selection.pile_index < 6 {
+                    let next_pile_index = self.selection.pile_index + 1;
                     let topmost = Self::get_topmost_card_index(board, PileType::Tableau, next_pile_index);
-                    let card_index = if current.card_index <= topmost {
-                        current.card_index
+                    let card_index = if self.selection.card_index <= topmost {
+                        self.selection.card_index
                     } else {
                         topmost
                     };
                     Selection::new(PileType::Tableau, next_pile_index, card_index)
                 } else {
-                    current
+                    self.selection
                 }
             }
             PileType::Foundation => {
-                if current.pile_index < 3 {
-                    let card_index = Self::get_topmost_card_index(board, PileType::Foundation, current.pile_index + 1);
-                    Selection::new(PileType::Foundation, current.pile_index + 1, card_index)
+                if self.selection.pile_index < 3 {
+                    let card_index = Self::get_topmost_card_index(board, PileType::Foundation, self.selection.pile_index + 1);
+                    Selection::new(PileType::Foundation, self.selection.pile_index + 1, card_index)
                 } else {
-                    current
+                    self.selection
                 }
             }
             PileType::Stock => {
@@ -70,16 +119,16 @@ impl SelectionNavigator {
                 let card_index = Self::get_topmost_card_index(board, PileType::Foundation, 0);
                 Selection::new(PileType::Foundation, 0, card_index)
             }
-        }
+        };
     }
 
-    pub fn move_up(board: &Board, current: Selection) -> Selection {
-        match current.pile {
+    pub fn move_up(&mut self, board: &Board) {
+        self.selection = match self.selection.pile {
             PileType::Tableau => {
-                if current.card_index > 0 {
-                    Selection::new(PileType::Tableau, current.pile_index, current.card_index - 1)
+                if self.selection.card_index > 0 {
+                    Selection::new(PileType::Tableau, self.selection.pile_index, self.selection.card_index - 1)
                 } else {
-                    if current.pile_index < 4 {
+                    if self.selection.pile_index < 4 {
                         let card_index = Self::get_topmost_card_index(board, PileType::Stock, 0);
                         Selection::new(PileType::Stock, 0, card_index)
                     } else {
@@ -88,26 +137,29 @@ impl SelectionNavigator {
                     }
                 }
             }
-            PileType::Foundation => current,
-            PileType::Stock => current,
-            PileType::Waste => current,
-        }
+            PileType::Foundation => self.selection,
+            PileType::Stock => self.selection,
+            PileType::Waste => self.selection,
+        };
     }
 
-    pub fn move_down(board: &Board, current: Selection) -> Selection {
-        match current.pile {
+    pub fn move_down(&mut self, board: &Board) {
+        self.selection = match self.selection.pile {
             PileType::Tableau => {
-                if let Some(pile) = board.get_tableau_pile(current.pile_index) {
+                if let Some(pile) = board.get_tableau_pile(self.selection.pile_index) {
                     let pile_len = pile.len();
-                    if pile_len > 0 && current.card_index < pile_len - 1 {
-                        return Selection::new(PileType::Tableau, current.pile_index, current.card_index + 1);
+                    if pile_len > 0 && self.selection.card_index < pile_len - 1 {
+                        Selection::new(PileType::Tableau, self.selection.pile_index, self.selection.card_index + 1)
+                    } else {
+                        self.selection
                     }
+                } else {
+                    self.selection
                 }
-                current
             }
             PileType::Foundation => {
-                if current.pile_index < 3 {
-                    Selection::new(PileType::Tableau, current.pile_index + 4, 0)
+                if self.selection.pile_index < 3 {
+                    Selection::new(PileType::Tableau, self.selection.pile_index + 4, 0)
                 } else {
                     Selection::new(PileType::Tableau, 6, 0)
                 }
@@ -118,7 +170,7 @@ impl SelectionNavigator {
             PileType::Waste => {
                 Selection::new(PileType::Tableau, 0, 0)
             }
-        }
+        };
     }
 
     fn get_topmost_card_index(board: &Board, pile_type: PileType, pile_index: usize) -> usize {
