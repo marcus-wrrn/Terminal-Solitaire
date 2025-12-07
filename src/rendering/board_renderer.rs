@@ -83,13 +83,13 @@ impl BoardRenderer {
         self.render_tableau(instr.board, instr.selection, instr.hover_state, buf, &tableau_sections);
     }
 
-    fn render_foundations(&mut self, board: &Board, selection: &Selection, hover_state: &HoverState, buf: &mut Buffer, foundation_areas: &[Rect]) {
+    fn render_foundations(&mut self, board: &Board, selection: Option<&Selection>, hover_state: &HoverState, buf: &mut Buffer, foundation_areas: &[Rect]) {
         for (i, (pile, area)) in board.foundation.iter().zip(foundation_areas).enumerate() {
             self.render_pile(Some(&format!("F{}", i + 1)), pile, i, selection, hover_state, *area, buf);
         }
     }
 
-    fn render_tableau(&mut self, board: &Board, selection: &Selection, hover_state: &HoverState, buf: &mut Buffer, tableau_areas: &[Rect]) {
+    fn render_tableau(&mut self, board: &Board, selection: Option<&Selection>, hover_state: &HoverState, buf: &mut Buffer, tableau_areas: &[Rect]) {
         for (i, (pile, area)) in board.tableau.iter().zip(tableau_areas).enumerate() {
             self.render_pile(Some(&format!("T{}", i)), pile, i, selection, hover_state, *area, buf);
         }
@@ -103,7 +103,7 @@ impl BoardRenderer {
         label: Option<&str>,
         pile: &Pile,
         index: usize,
-        selection: &Selection,
+        selection: Option<&Selection>,
         hover_state: &HoverState,
         area: Rect,
         buf: &mut Buffer

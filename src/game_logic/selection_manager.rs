@@ -11,12 +11,19 @@ impl SelectionManager {
         Self {
             selection: Selection::new(PileType::Tableau, 0, 0),
             picked_up: None,
-            visible: true,
+            visible: false,
         }
     }
 
     pub fn selection(&self) -> Selection {
         self.selection
+    }
+
+    pub fn selection_if_visible(&self) -> Option<&Selection> {
+        if self.visible {
+            return Some(&self.selection);
+        }
+        None
     }
 
     pub fn set_selection(&mut self, selection: Selection) {
@@ -41,10 +48,6 @@ impl SelectionManager {
 
     pub fn cancel_pickup(&mut self) {
         self.picked_up = None;
-    }
-
-    pub fn is_visible(&self) -> bool {
-        self.visible
     }
 
     pub fn set_visible(&mut self, visible: bool) {

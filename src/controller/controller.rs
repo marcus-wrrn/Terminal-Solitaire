@@ -118,7 +118,7 @@ impl Controller {
             key_bindings: KeyBindings::default(),
             current_focus: FocusArea::Tableau,
             drag_state: None,
-            control_mode: ControlMode::Keyboard,
+            control_mode: ControlMode::Mouse,
         }
     }
 

@@ -26,7 +26,7 @@ impl PileRenderer {
     pub fn render(&self,
         pile: &Pile,
         pile_index: usize,
-        current_selection: &Selection,
+        selection: Option<&Selection>,
         hover_state: &HoverState,
         buf: &mut Buffer,
         area: Rect
@@ -37,18 +37,20 @@ impl PileRenderer {
             _ => (false, false),
         };
 
-        let is_selected = current_selection.pile == pile.pile_type && current_selection.pile_index == pile_index;
-        
+        let is_pile_selected = selection
+            .map(|sel| sel.pile == pile.pile_type && sel.pile_index == pile_index)
+            .unwrap_or(false);
+
         if pile.is_empty() {
-            self.render_empty_pile(buf, area, is_selected, is_hover_target, is_valid);
+            self.render_empty_pile(buf, area, is_pile_selected, is_hover_target, is_valid);
             return;
-        } 
-        
+        }
+
         if pile.pile_type == PileType::Tableau {
             for (idx, card) in pile.cards.iter().enumerate() {
                 let card_y = area.y + (idx as u16) * Self::VERTICAL_OVERLAP;
                 let is_last_card = idx == pile.cards.len() - 1;
-                let is_card_selected = is_selected && current_selection.card_index == idx;
+                let is_card_selected = is_pile_selected && selection.map(|sel| sel.card_index == idx).unwrap_or(false);
 
                 if is_last_card {
                     self.card_renderer.render(card, is_card_selected, buf, area.x, card_y);
@@ -63,7 +65,7 @@ impl PileRenderer {
                 self.render_hover_highlight(buf, area_cp, is_valid);
             }
         } else if let Some(card) = pile.peek() {
-            let is_card_selected = is_selected && current_selection.card_index == pile.len() - 1;
+            let is_card_selected = is_pile_selected && selection.map(|sel| sel.card_index == pile.len() - 1).unwrap_or(false);
             self.card_renderer.render(card, is_card_selected, buf, area.x, area.y);
             if is_hover_target {
                 self.render_hover_highlight(buf, area, is_valid);

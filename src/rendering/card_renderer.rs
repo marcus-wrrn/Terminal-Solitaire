@@ -7,16 +7,14 @@ use ratatui::{
 
 /// Renderer for individual Card objects
 /// Handles all visual presentation of cards without modifying game state
-pub struct CardRenderer {
-    // debug_log: &'a DebugLog,
-}
+pub struct CardRenderer;
 
 impl CardRenderer {
     pub const WIDTH: u16 = 9;
     pub const HEIGHT: u16 = 7;
 
     pub fn new() -> Self {
-        Self { }
+        Self
     }
 
     /// Renders a complete card at the specified position

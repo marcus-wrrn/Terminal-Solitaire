@@ -40,9 +40,10 @@ impl GameManager {
 
             if self.controller.is_keyboard_mode() {
                 self.selection_manager.set_visible(true);
-            } else {
-                self.selection_manager.set_visible(false);
-            }
+            } 
+            // else {
+            //     self.selection_manager.set_visible(false);
+            // }
 
             if let Some(action) = self.controller.poll_action()? {
                 if self.menu_manager.is_menu_active() {
@@ -134,6 +135,7 @@ impl GameManager {
     fn handle_left_mouse_press(&mut self, x: u16, y: u16) {
         if let Some(selection) = self.game_renderer.coordinate_to_selection(self.game_state.board(), x, y) {
             self.selection_manager.set_selection(selection);
+            self.selection_manager.set_visible(true);
         }
     }
 
@@ -157,6 +159,7 @@ impl GameManager {
                 }
             }
         }
+        self.selection_manager.set_visible(false);
     }
 
     fn handle_start_drag(&mut self, x: u16, y: u16) {
@@ -210,6 +213,7 @@ impl GameManager {
                 } else {
                     self.selection_manager.place();
                 }
+                self.selection_manager.set_visible(false);
             }
         }
 
@@ -287,11 +291,10 @@ impl GameManager {
     }
 
     pub fn draw(&mut self, frame: &mut Frame) {
-        let selection = self.selection_manager.selection();
+        let selection = self.selection_manager.selection_if_visible();
         let rendering_instr = RenderingInstructions::new(
             self.game_state.board(),
-            &selection,
-            self.selection_manager.is_visible(),
+            selection,
             &self.hover_state,
             &self.debug_log
         );
