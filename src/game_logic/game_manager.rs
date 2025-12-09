@@ -1,5 +1,5 @@
 use crate::game_logic::{GameState, SelectionManager, AnimationManager, HoverState, MenuManager, MenuAction};
-use crate::game_objects::Selection;
+use crate::game_objects::{PileType, Selection};
 use crate::rendering::{GameRenderer, RenderingInstructions};
 use crate::controller::{Controller, GameAction};
 use crate::ui::{DebugLog, MenuOption};
@@ -27,7 +27,6 @@ impl GameManager {
             game_renderer: GameRenderer::new(),
             hover_state: HoverState::None,
             menu_manager: MenuManager::new(),
-            // win_popup,
             animation_manager: AnimationManager::new(),
         }
     }
@@ -41,9 +40,6 @@ impl GameManager {
             if self.controller.is_keyboard_mode() {
                 self.selection_manager.set_visible(true);
             } 
-            // else {
-            //     self.selection_manager.set_visible(false);
-            // }
 
             if let Some(action) = self.controller.poll_action()? {
                 if self.menu_manager.is_menu_active() {
@@ -141,6 +137,11 @@ impl GameManager {
 
     fn handle_click(&mut self) {
         let selection = self.selection_manager.selection();
+        if selection.pile == PileType::Stock && !self.selection_manager.has_picked_up() {
+            self.handle_stock_click();
+            return;
+        }
+
         let moves = self.find_valid_moves(&selection);
 
         if let Some(first_move) = moves.first() {
@@ -200,9 +201,7 @@ impl GameManager {
 
     fn handle_complete_drag(&mut self, x: u16, y: u16) {
         if let Some(target) = self.game_renderer.coordinate_to_selection(self.game_state.board(), x, y) {
-            if target.pile == crate::game_objects::PileType::Stock && !self.selection_manager.has_picked_up() {
-                self.handle_stock_click();
-            } else if self.selection_manager.has_picked_up() {
+            if self.selection_manager.has_picked_up() {
                 self.selection_manager.set_selection(target);
                 let Some(source) = self.selection_manager.picked_up() else {
                     self.debug_log.log("Could not find picked up card for drag");
@@ -300,7 +299,6 @@ impl GameManager {
         );
 
         self.game_renderer.render(frame.area(), frame.buffer_mut(), &rendering_instr);
-
         self.menu_manager.render(frame.area(), frame.buffer_mut());
     }
 }

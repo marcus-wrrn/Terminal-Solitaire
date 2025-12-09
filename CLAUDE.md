@@ -2,7 +2,7 @@
 
 ## Dev notes
 
-Do not abuse comments
+Do not abuse comments and use the UNIX philosophy
 
 ## Source Files
 

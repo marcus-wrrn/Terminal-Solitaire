@@ -9,15 +9,6 @@ pub enum ControlMode {
     Mouse,
 }
 
-/// Represents the different areas of focus on the game board
-#[derive(Debug, Clone, Copy, PartialEq, Eq)]
-pub enum FocusArea {
-    Tableau,
-    Foundation,
-    Stock,
-    Waste,
-}
-
 /// Tracks the current drag operation state
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
 pub struct DragState {
@@ -107,7 +98,6 @@ pub enum GameAction {
 /// Controller for handling user input and key bindings
 pub struct Controller {
     key_bindings: KeyBindings,
-    current_focus: FocusArea,
     drag_state: Option<DragState>,
     control_mode: ControlMode,
 }
@@ -116,7 +106,6 @@ impl Controller {
     pub fn new() -> Self {
         Self {
             key_bindings: KeyBindings::default(),
-            current_focus: FocusArea::Tableau,
             drag_state: None,
             control_mode: ControlMode::Mouse,
         }
@@ -152,29 +141,12 @@ impl Controller {
         Ok(None)
     }
 
-    /// This method will block until a key event is received.
-    // pub fn read_action(&mut self) -> io::Result<GameAction> {
-    //     loop {
-    //         if let Event::Key(key) = event::read()? {
-    //             if key.kind == KeyEventKind::Press {
-    //                 let action = self.map_key_to_action(key);
-    //                 self.handle_key_action(action.clone());
-    //                 return Ok(action);
-    //             }
-    //         }
-    //     }
-    // }
-
     fn handle_key_action(&mut self, action: GameAction) {
         match action {
             GameAction::MoveLeft | GameAction::MoveRight |
             GameAction::MoveUp | GameAction::MoveDown => {
                 self.control_mode = ControlMode::Keyboard;
             }
-            GameAction::FocusTableau => self.current_focus = FocusArea::Tableau,
-            GameAction::FocusFoundation => self.current_focus = FocusArea::Foundation,
-            GameAction::FocusStock => self.current_focus = FocusArea::Stock,
-            GameAction::FocusWaste => self.current_focus = FocusArea::Waste,
             GameAction::Cancel => {
                 if self.drag_state.is_some() {
                     self.drag_state = None;
