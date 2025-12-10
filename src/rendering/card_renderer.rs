@@ -18,7 +18,7 @@ impl CardRenderer {
     }
 
     /// Renders a complete card at the specified position
-    pub fn render(&self, card: &Card, is_selected: bool, buf: &mut Buffer, x: u16, y: u16) {
+    pub fn render(&self, card: &Card, is_selected: bool, is_picked_up: bool, buf: &mut Buffer, x: u16, y: u16) {
         let card_area = Rect {
             x,
             y,
@@ -30,7 +30,7 @@ impl CardRenderer {
             return;
         }
 
-        self.render_border(buf, card_area, is_selected);
+        self.render_border(buf, card_area, is_selected, is_picked_up);
 
         if card.face_up {
             self.render_face_up(card, buf, card_area);
@@ -41,7 +41,7 @@ impl CardRenderer {
 
     /// Renders a card that is overlapped by another card (shows only partial top)
     /// Used for tableau piles where cards overlap vertically
-    pub fn render_overlapped(&self, card: &Card, is_selected: bool, buf: &mut Buffer, x: u16, y: u16, overlap: u16) {
+    pub fn render_overlapped(&self, card: &Card, is_selected: bool, is_picked_up: bool, buf: &mut Buffer, x: u16, y: u16, overlap: u16) {
         let visible_height = overlap;
 
         if visible_height < 2 {
@@ -49,7 +49,7 @@ impl CardRenderer {
         }
 
         let ((top_border, vertical, _), border_style) =
-            Self::get_border_chars(is_selected, Self::WIDTH);
+            Self::get_border_chars(is_selected, is_picked_up, Self::WIDTH);
 
         buf.set_string(x, y, &top_border, border_style);
 
@@ -78,9 +78,9 @@ impl CardRenderer {
     }
 
     /// Renders the border of a card
-    fn render_border(&self, buf: &mut Buffer, area: Rect, is_selected: bool) {
+    fn render_border(&self, buf: &mut Buffer, area: Rect, is_selected: bool, is_picked_up: bool) {
         let ((top_border, vertical, bottom_border), border_style) =
-            Self::get_border_chars(is_selected, area.width);
+            Self::get_border_chars(is_selected, is_picked_up, area.width);
 
         buf.set_string(area.x, area.y, &top_border, border_style);
 
@@ -161,28 +161,39 @@ impl CardRenderer {
     }
 
     /// Returns border characters and style based on selection state
-    fn get_border_chars(is_selected: bool, width: u16) -> ((String, String, String), Style) {
+    fn get_border_chars(is_selected: bool, is_picked_up: bool, width: u16) -> ((String, String, String), Style) {
         let horizontal_count = width.saturating_sub(2) as usize;
 
-        let chars = if is_selected {
+        let (chars, color) = if is_picked_up {
             (
-                format!("╔{}╗", "═".repeat(horizontal_count)),
-                "║".to_string(),
-                format!("╚{}╝", "═".repeat(horizontal_count)),
+                (
+                    format!("╔{}╗", "═".repeat(horizontal_count)),
+                    "║".to_string(),
+                    format!("╚{}╝", "═".repeat(horizontal_count)),
+                ),
+                Color::Green
+            )
+        } else if is_selected {
+            (
+                (
+                    format!("╔{}╗", "═".repeat(horizontal_count)),
+                    "║".to_string(),
+                    format!("╚{}╝", "═".repeat(horizontal_count)),
+                ),
+                Color::Yellow
             )
         } else {
             (
-                format!("┌{}┐", "─".repeat(horizontal_count)),
-                "│".to_string(),
-                format!("└{}┘", "─".repeat(horizontal_count)),
+                (
+                    format!("┌{}┐", "─".repeat(horizontal_count)),
+                    "│".to_string(),
+                    format!("└{}┘", "─".repeat(horizontal_count)),
+                ),
+                Color::White
             )
         };
 
-        let style = if is_selected {
-            Style::default().fg(Color::Yellow)
-        } else {
-            Style::default()
-        };
+        let style = Style::default().fg(color);
 
         (chars, style)
     }

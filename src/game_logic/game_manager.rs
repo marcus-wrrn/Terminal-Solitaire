@@ -115,6 +115,7 @@ impl GameManager {
             let target = self.selection_manager.selection();
             if let Err(msg) = self.game_state.place_cards(source, target) {
                 self.debug_log.log(format!("{}", msg));
+                self.selection_manager.cancel_pickup();
             } else {
                 self.selection_manager.place();
             }
@@ -209,6 +210,7 @@ impl GameManager {
                 };
                 if let Err(val) = self.game_state.place_cards(source, target) {
                     self.debug_log.log(format!("{}", val));
+                    self.selection_manager.cancel_pickup();
                 } else {
                     self.selection_manager.place();
                 }
@@ -291,9 +293,11 @@ impl GameManager {
 
     pub fn draw(&mut self, frame: &mut Frame) {
         let selection = self.selection_manager.selection_if_visible();
+        let picked_up = self.selection_manager.picked_up();
         let rendering_instr = RenderingInstructions::new(
             self.game_state.board(),
             selection,
+            picked_up.as_ref(),
             &self.hover_state,
             &self.debug_log
         );

@@ -27,6 +27,7 @@ impl PileRenderer {
         pile: &Pile,
         pile_index: usize,
         selection: Option<&Selection>,
+        picked_up: Option<&Selection>,
         hover_state: &HoverState,
         buf: &mut Buffer,
         area: Rect
@@ -51,11 +52,14 @@ impl PileRenderer {
                 let card_y = area.y + (idx as u16) * Self::VERTICAL_OVERLAP;
                 let is_last_card = idx == pile.cards.len() - 1;
                 let is_card_selected = is_pile_selected && selection.map(|sel| sel.card_index == idx).unwrap_or(false);
+                let is_card_picked_up = picked_up
+                    .map(|sel| sel.pile == pile.pile_type && sel.pile_index == pile_index && sel.card_index == idx)
+                    .unwrap_or(false);
 
                 if is_last_card {
-                    self.card_renderer.render(card, is_card_selected, buf, area.x, card_y);
+                    self.card_renderer.render(card, is_card_selected, is_card_picked_up, buf, area.x, card_y);
                 } else {
-                    self.card_renderer.render_overlapped(card, is_card_selected, buf, area.x, card_y, Self::VERTICAL_OVERLAP);
+                    self.card_renderer.render_overlapped(card, is_card_selected, is_card_picked_up, buf, area.x, card_y, Self::VERTICAL_OVERLAP);
                 }
             }
 
@@ -66,7 +70,10 @@ impl PileRenderer {
             }
         } else if let Some(card) = pile.peek() {
             let is_card_selected = is_pile_selected && selection.map(|sel| sel.card_index == pile.len() - 1).unwrap_or(false);
-            self.card_renderer.render(card, is_card_selected, buf, area.x, area.y);
+            let is_card_picked_up = picked_up
+                .map(|sel| sel.pile == pile.pile_type && sel.pile_index == pile_index && sel.card_index == pile.len() - 1)
+                .unwrap_or(false);
+            self.card_renderer.render(card, is_card_selected, is_card_picked_up, buf, area.x, area.y);
             if is_hover_target {
                 self.render_hover_highlight(buf, area, is_valid);
             }

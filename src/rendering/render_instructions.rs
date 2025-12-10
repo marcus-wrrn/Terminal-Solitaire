@@ -10,16 +10,18 @@ pub struct RenderingInstructions<'a> {
 
 impl<'a> RenderingInstructions<'a> {
     pub fn new(
-        board: &'a Board, 
-        selection: Option<&'a Selection>, 
-        hover_state: &'a HoverState, 
+        board: &'a Board,
+        selection: Option<&'a Selection>,
+        picked_up: Option<&'a Selection>,
+        hover_state: &'a HoverState,
         debug_log: &'a DebugLog
     ) -> Self {
         Self {
-            board_rendering_instr: BoardRenderingIntr { 
-                board, 
-                selection, 
-                hover_state 
+            board_rendering_instr: BoardRenderingIntr {
+                board,
+                selection,
+                picked_up,
+                hover_state
             },
             debug_log: debug_log
         }
@@ -29,6 +31,7 @@ impl<'a> RenderingInstructions<'a> {
 pub struct BoardRenderingIntr<'a> {
     pub board: &'a Board,
     pub selection: Option<&'a Selection>,
+    pub picked_up: Option<&'a Selection>,
     pub hover_state: &'a HoverState
 }
 
