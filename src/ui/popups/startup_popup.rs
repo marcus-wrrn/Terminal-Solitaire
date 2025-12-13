@@ -55,7 +55,14 @@ impl StartupPop {
             ]),
             Line::from(""),
             Line::from(vec![
-                Span::styled("Movement", header_style),
+                Span::styled("Mouse Controls", header_style),
+            ]),
+            Line::from(vec![
+                Span::styled("Left Click or Hold & Drag to move cards from pile to pile", key_style)
+            ]),
+            Line::from(""),
+            Line::from(vec![
+                Span::styled("KeyBoard Controls", header_style),
             ]),
             Line::from(vec![
                 Span::styled(bindings.move_left_str(), key_style),
@@ -67,14 +74,15 @@ impl StartupPop {
                 Span::styled(bindings.move_down_str(), key_style),
                 Span::styled(" - For moving around", label_style),
             ]),
+            Line::from(vec![
+                Span::styled(format!("{}/{}", bindings.select_str(), bindings.enter_str()), key_style),
+                Span::styled(" - Select Card and Move to new Pile", label_style),
+            ]),
             Line::from(""),
             Line::from(vec![
                 Span::styled("Actions", header_style),
             ]),
-            Line::from(vec![
-                Span::styled(format!("{}/{}", bindings.select_str(), bindings.enter_str()), key_style),
-                Span::styled(" - Select card", label_style),
-            ]),
+            
             Line::from(vec![
                 Span::styled(bindings.cancel_str(), key_style),
                 Span::styled(" - Cancel selection", label_style),

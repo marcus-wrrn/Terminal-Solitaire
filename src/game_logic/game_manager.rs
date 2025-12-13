@@ -15,6 +15,7 @@ pub struct GameManager {
     hover_state: HoverState,
     menu_manager: MenuManager,
     animation_manager: AnimationManager,
+    quit_game: bool,
 }
 
 impl GameManager {
@@ -30,11 +31,15 @@ impl GameManager {
             hover_state: HoverState::None,
             menu_manager: MenuManager::new(key_bindings),
             animation_manager: AnimationManager::new(),
+            quit_game: false,
         }
     }
 
     pub fn run(mut self, mut terminal: DefaultTerminal) -> Result<(), io::Error> {
         loop {
+            if self.quit_game {
+                break;
+            }
             terminal.draw(|frame| self.draw(frame))?;
             self.animation_manager.process_game_state(&mut self.game_state, &mut self.debug_log);
             self.menu_manager.handle_game_state(&self.game_state);
@@ -50,7 +55,7 @@ impl GameManager {
                     }
                 } else {
                     match action {
-                        GameAction::Quit => break,
+                        GameAction::Quit => self.quit_game = true,
                         GameAction::MoveLeft => {
                             self.selection_manager.move_left(self.game_state.board());
                         }
@@ -99,8 +104,8 @@ impl GameManager {
                             self.selection_manager.cancel_pickup();
                             self.hover_state = HoverState::None;
                         }
-                        GameAction::OpenMenu => {
-                            
+                        GameAction::HelpMenu => {
+                            self.menu_manager.show_startup_screen();
                         }
                         _ => {}
                     }
@@ -230,6 +235,9 @@ impl GameManager {
         match menu_action {
             MenuAction::OptionSelected(option) => {
                 match option {
+                    MenuOption::Quit => {
+                        self.quit_game = true;
+                    }
                     MenuOption::Restart => {
                         self.restart_game();
                     }
@@ -238,6 +246,7 @@ impl GameManager {
                     MenuOption::DeveloperMode => {
                     }
                     MenuOption::Help => {
+                        self.menu_manager.show_startup_screen();
                     }
                 }
             }

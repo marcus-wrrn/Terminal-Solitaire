@@ -6,6 +6,8 @@ pub struct KeyBindings {
     /// Key to quit the game
     pub quit: KeyCode,
 
+    pub help: KeyCode,
+
     /// Key to select a card or pile
     pub select: KeyCode,
 
@@ -58,6 +60,7 @@ impl Default for KeyBindings {
     fn default() -> Self {
         Self {
             quit: KeyCode::Char('q'),
+            help: KeyCode::Char('h'),
             select: KeyCode::Char(' '),
             enter: KeyCode::Enter,
             cancel: KeyCode::Char('x'),

@@ -11,6 +11,14 @@ pub struct MenuManager {
     startup_screen: StartupPop,
 }
 
+#[derive(Debug, Clone, Copy, PartialEq)]
+pub enum MenuAction {
+    CloseMenu,
+    Navigate,
+    OptionSelected(MenuOption),
+}
+
+
 impl MenuManager {
     pub fn new(key_bindings: Rc<RefCell<KeyBindings>>) -> Self {
         let mut startup_screen = StartupPop::new(key_bindings);
@@ -28,6 +36,10 @@ impl MenuManager {
 
     pub fn hide_startup_screen(&mut self) {
         self.startup_screen.hide();
+    }
+
+    pub fn show_startup_screen(&mut self) {
+        self.startup_screen.show();
     }
 
     pub fn toggle_options_menu(&mut self) {
@@ -89,11 +101,4 @@ impl MenuManager {
         }
 
     }
-}
-
-#[derive(Debug, Clone, Copy, PartialEq)]
-pub enum MenuAction {
-    CloseMenu,
-    Navigate,
-    OptionSelected(MenuOption),
 }

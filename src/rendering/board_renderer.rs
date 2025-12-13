@@ -169,12 +169,4 @@ impl BoardRenderer {
         }
         None
     }
-
-    // /// Returns the bounds of a specific pile, if it exists
-    // pub fn get_pile_bounds(&self, pile_type: PileType, pile_index: usize) -> Option<Rect> {
-    //     self.pile_bounds
-    //         .iter()
-    //         .find(|b| b.pile_type == pile_type && b.pile_index == pile_index)
-    //         .map(|b| b.rect)
-    // }
 }

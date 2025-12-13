@@ -8,6 +8,7 @@ use ratatui::{
 
 #[derive(Debug, Clone, Copy, PartialEq)]
 pub enum MenuOption {
+    Quit,
     Restart,
     RebindKeys,
     DeveloperMode,
@@ -17,6 +18,7 @@ pub enum MenuOption {
 impl MenuOption {
     fn all() -> Vec<MenuOption> {
         vec![
+            MenuOption::Quit,
             MenuOption::Restart,
             MenuOption::RebindKeys,
             MenuOption::Help,
@@ -26,9 +28,10 @@ impl MenuOption {
 
     fn label(&self) -> &str {
         match self {
+            MenuOption::Quit => "Quit",
             MenuOption::Restart => "Restart Game",
             MenuOption::RebindKeys => "Rebind Keys",
-            MenuOption::DeveloperMode => "Developer Mode",
+            MenuOption::DeveloperMode => "Developer Log",
             MenuOption::Help => "Help",
         }
     }
