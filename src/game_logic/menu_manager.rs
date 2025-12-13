@@ -1,30 +1,41 @@
-use crate::ui::{OptionsMenu, MenuOption, popups::VictoryScreen};
+use crate::ui::{OptionsMenu, MenuOption, popups::{VictoryPop, StartupPop}};
 use crate::game_logic::GameState;
-use crate::controller::GameAction;
+use crate::controller::{GameAction, KeyBindings};
 use ratatui::{buffer::Buffer, layout::Rect};
+use std::rc::Rc;
 
 pub struct MenuManager {
     options_menu: OptionsMenu,
-    victory_screen: VictoryScreen,
+    victory_screen: VictoryPop,
+    startup_screen: StartupPop,
 }
 
 impl MenuManager {
     pub fn new() -> Self {
+        let key_bindings = Rc::new(KeyBindings::default());
+        let mut startup_screen = StartupPop::new(key_bindings);
+        startup_screen.show();
         Self {
             options_menu: OptionsMenu::new(),
-            victory_screen: VictoryScreen::new()
+            victory_screen: VictoryPop::new(),
+            startup_screen
         }
     }
 
     pub fn is_menu_active(&self) -> bool {
-        self.options_menu.is_visible()
+        self.options_menu.is_visible() || self.startup_screen.is_visible()
     }
 
     pub fn toggle_options_menu(&mut self) {
         self.options_menu.toggle();
     }
 
-    pub fn handle_menu_action(&mut self, action: GameAction) -> Option<MenuAction> {
+    pub fn handle_menu(&mut self, action: GameAction) -> Option<MenuAction> {
+        // hide startup menu on any key press
+        if self.startup_screen.is_visible() {
+            self.startup_screen.hide();
+        }
+
         if !self.options_menu.is_visible() {
             return None;
         }
@@ -60,6 +71,10 @@ impl MenuManager {
     }
 
     pub fn render(&self, area: Rect, buf: &mut Buffer) {
+        if self.startup_screen.is_visible() {
+            self.startup_screen.render(area, buf);
+        }
+
         if self.victory_screen.is_visible() {
             self.victory_screen.render(area, buf);
         }

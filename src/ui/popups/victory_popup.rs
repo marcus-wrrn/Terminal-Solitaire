@@ -6,11 +6,11 @@ use ratatui::{
     widgets::{Block, Borders, Clear, Paragraph, Widget, BorderType},
 };
 
-pub struct VictoryScreen {
+pub struct VictoryPop {
     is_visible: bool,
 }
 
-impl VictoryScreen {
+impl VictoryPop {
     pub fn new() -> Self {
         Self {
             is_visible: false,
@@ -100,7 +100,7 @@ impl VictoryScreen {
     }
 }
 
-impl Default for VictoryScreen {
+impl Default for VictoryPop {
     fn default() -> Self {
         Self::new()
     }

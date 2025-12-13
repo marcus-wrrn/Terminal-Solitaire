@@ -43,7 +43,7 @@ impl GameManager {
 
             if let Some(action) = self.controller.poll_action()? {
                 if self.menu_manager.is_menu_active() {
-                    if let Some(menu_action) = self.menu_manager.handle_menu_action(action) {
+                    if let Some(menu_action) = self.menu_manager.handle_menu(action) {
                         self.handle_menu_action(menu_action);
                     }
                 } else {
