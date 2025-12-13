@@ -252,6 +252,7 @@ impl GameManager {
         self.hover_state = HoverState::None;
         self.animation_manager.stop_animation();
         self.menu_manager = MenuManager::new(self.controller.keybindings());
+        self.menu_manager.hide_startup_screen();
     }
 
     pub fn find_valid_moves(&self, selection: &Selection) -> Vec<crate::game_objects::Selection> {

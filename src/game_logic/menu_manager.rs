@@ -26,6 +26,10 @@ impl MenuManager {
         self.options_menu.is_visible() || self.startup_screen.is_visible()
     }
 
+    pub fn hide_startup_screen(&mut self) {
+        self.startup_screen.hide();
+    }
+
     pub fn toggle_options_menu(&mut self) {
         self.options_menu.toggle();
     }
