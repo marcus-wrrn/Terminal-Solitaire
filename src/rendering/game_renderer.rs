@@ -49,6 +49,8 @@ impl GameRenderer {
 
         self.board_renderer.render(&render_instr.board_rendering_instr, buf, vertical_sections[2]);
 
-        render_instr.debug_log.render(vertical_sections[3], buf);
+        if render_instr.debug_log.visible {
+            render_instr.debug_log.render(vertical_sections[3], buf);
+        }
     }
 }

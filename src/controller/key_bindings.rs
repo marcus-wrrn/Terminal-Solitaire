@@ -147,10 +147,6 @@ impl KeyBindings {
         Self::key_to_str(&self.draw_stock)
     }
 
-    pub fn undo_str(&self) -> String {
-        Self::key_to_str(&self.undo)
-    }
-
     pub fn restart_str(&self) -> String {
         Self::key_to_str(&self.restart)
     }

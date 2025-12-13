@@ -96,10 +96,6 @@ impl StartupPop {
                 Span::styled("Game Controls", header_style),
             ]),
             Line::from(vec![
-                Span::styled(bindings.undo_str(), key_style),
-                Span::styled(" - Undo last move", label_style),
-            ]),
-            Line::from(vec![
                 Span::styled(bindings.restart_str(), key_style),
                 Span::styled(" - Restart Your game", label_style),
             ]),

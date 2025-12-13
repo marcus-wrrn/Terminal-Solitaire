@@ -244,6 +244,7 @@ impl GameManager {
                     MenuOption::RebindKeys => {
                     }
                     MenuOption::DeveloperMode => {
+                        self.debug_log.visible = !self.debug_log.visible; // toggle debug log
                     }
                     MenuOption::Help => {
                         self.menu_manager.show_startup_screen();

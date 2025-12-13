@@ -9,6 +9,7 @@ use ratatui::{
 pub struct DebugLog {
     messages: Vec<String>,
     max_lines: usize,
+    pub visible: bool,
 }
 
 impl DebugLog {
@@ -16,6 +17,7 @@ impl DebugLog {
         Self {
             messages: Vec::new(),
             max_lines,
+            visible: false,
         }
     }
 
