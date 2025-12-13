@@ -78,6 +78,85 @@ impl Default for KeyBindings {
     }
 }
 
+impl KeyBindings {
+    /// Convert a KeyCode to a human-readable string
+    pub fn key_to_str(key: &KeyCode) -> String {
+        match key {
+            KeyCode::Char(c) => {
+                if *c == ' ' {
+                    return "Space Bar".to_string();
+                }
+                c.to_string()
+            },
+            KeyCode::Enter => "Enter".to_string(),
+            KeyCode::Esc => "Esc".to_string(),
+            KeyCode::Backspace => "Backspace".to_string(),
+            KeyCode::Left => "Left".to_string(),
+            KeyCode::Right => "Right".to_string(),
+            KeyCode::Up => "Up".to_string(),
+            KeyCode::Down => "Down".to_string(),
+            KeyCode::Home => "Home".to_string(),
+            KeyCode::End => "End".to_string(),
+            KeyCode::PageUp => "PageUp".to_string(),
+            KeyCode::PageDown => "PageDown".to_string(),
+            KeyCode::Tab => "Tab".to_string(),
+            KeyCode::BackTab => "BackTab".to_string(),
+            KeyCode::Delete => "Delete".to_string(),
+            KeyCode::Insert => "Insert".to_string(),
+            KeyCode::F(n) => format!("F{}", n),
+            _ => "Unknown".to_string(),
+        }
+    }
+
+    pub fn quit_str(&self) -> String {
+        Self::key_to_str(&self.quit)
+    }
+
+    pub fn select_str(&self) -> String {
+        Self::key_to_str(&self.select)
+    }
+
+    pub fn enter_str(&self) -> String {
+        Self::key_to_str(&self.enter)
+    }
+
+    pub fn cancel_str(&self) -> String {
+        Self::key_to_str(&self.cancel)
+    }
+
+    pub fn move_left_str(&self) -> String {
+        Self::key_to_str(&self.move_left)
+    }
+
+    pub fn move_right_str(&self) -> String {
+        Self::key_to_str(&self.move_right)
+    }
+
+    pub fn move_up_str(&self) -> String {
+        Self::key_to_str(&self.move_up)
+    }
+
+    pub fn move_down_str(&self) -> String {
+        Self::key_to_str(&self.move_down)
+    }
+
+    pub fn draw_stock_str(&self) -> String {
+        Self::key_to_str(&self.draw_stock)
+    }
+
+    pub fn undo_str(&self) -> String {
+        Self::key_to_str(&self.undo)
+    }
+
+    pub fn restart_str(&self) -> String {
+        Self::key_to_str(&self.restart)
+    }
+
+    pub fn options_menu_str(&self) -> String {
+        Self::key_to_str(&self.options_menu)
+    }
+}
+
 // impl KeyBindings {
 //     // /// Builder method to set the quit key
 //     // pub fn with_quit(mut self, key: KeyCode) -> Self {

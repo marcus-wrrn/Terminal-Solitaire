@@ -57,53 +57,29 @@ impl StartupPop {
                 Span::styled("Movement", header_style),
             ]),
             Line::from(vec![
-                Span::styled(format!("{:?}", bindings.move_left), key_style),
+                Span::styled(bindings.move_left_str(), key_style),
                 Span::styled(" / ", label_style),
-                Span::styled(format!("{:?}", bindings.move_right), key_style),
+                Span::styled(bindings.move_right_str(), key_style),
                 Span::styled(" / ", label_style),
-                Span::styled(format!("{:?}", bindings.move_up), key_style),
+                Span::styled(bindings.move_up_str(), key_style),
                 Span::styled(" / ", label_style),
-                Span::styled(format!("{:?}", bindings.move_down), key_style),
-                Span::styled(" - Move selection", label_style),
-            ]),
-            Line::from(""),
-            Line::from(vec![
-                Span::styled("Focus Areas", header_style),
-            ]),
-            Line::from(vec![
-                Span::styled(format!("{:?}", bindings.focus_tableau), key_style),
-                Span::styled(" - Focus Tableau", label_style),
-            ]),
-            Line::from(vec![
-                Span::styled(format!("{:?}", bindings.focus_foundation), key_style),
-                Span::styled(" - Focus Foundation", label_style),
-            ]),
-            Line::from(vec![
-                Span::styled(format!("{:?}", bindings.focus_stock), key_style),
-                Span::styled(" - Focus Stock", label_style),
-            ]),
-            Line::from(vec![
-                Span::styled(format!("{:?}", bindings.focus_waste), key_style),
-                Span::styled(" - Focus Waste", label_style),
+                Span::styled(bindings.move_down_str(), key_style),
+                Span::styled(" - For moving around", label_style),
             ]),
             Line::from(""),
             Line::from(vec![
                 Span::styled("Actions", header_style),
             ]),
             Line::from(vec![
-                Span::styled(format!("{:?}", bindings.select), key_style),
+                Span::styled(format!("{}/{}", bindings.select_str(), bindings.enter_str()), key_style),
                 Span::styled(" - Select card", label_style),
             ]),
             Line::from(vec![
-                Span::styled(format!("{:?}", bindings.enter), key_style),
-                Span::styled(" - Confirm action", label_style),
-            ]),
-            Line::from(vec![
-                Span::styled(format!("{:?}", bindings.cancel), key_style),
+                Span::styled(bindings.cancel_str(), key_style),
                 Span::styled(" - Cancel selection", label_style),
             ]),
             Line::from(vec![
-                Span::styled(format!("{:?}", bindings.draw_stock), key_style),
+                Span::styled(bindings.draw_stock_str(), key_style),
                 Span::styled(" - Draw from stock", label_style),
             ]),
             Line::from(""),
@@ -111,23 +87,19 @@ impl StartupPop {
                 Span::styled("Game Controls", header_style),
             ]),
             Line::from(vec![
-                Span::styled(format!("{:?}", bindings.undo), key_style),
+                Span::styled(bindings.undo_str(), key_style),
                 Span::styled(" - Undo last move", label_style),
             ]),
             Line::from(vec![
-                Span::styled(format!("{:?}", bindings.restart), key_style),
-                Span::styled(" - Restart game", label_style),
+                Span::styled(bindings.restart_str(), key_style),
+                Span::styled(" - Restart Your game", label_style),
             ]),
             Line::from(vec![
-                Span::styled(format!("{:?}", bindings.open_menu), key_style),
-                Span::styled(" - Open menu", label_style),
-            ]),
-            Line::from(vec![
-                Span::styled(format!("{:?}", bindings.options_menu), key_style),
+                Span::styled(bindings.options_menu_str(), key_style),
                 Span::styled(" - Options menu", label_style),
             ]),
             Line::from(vec![
-                Span::styled(format!("{:?}", bindings.quit), key_style),
+                Span::styled(bindings.quit_str(), key_style),
                 Span::styled(" - Quit game", label_style),
             ]),
             Line::from(""),
