@@ -1,6 +1,8 @@
 use super::KeyBindings;
 use ratatui::crossterm::event::{self, Event, KeyEvent, KeyEventKind, MouseButton, MouseEventKind};
 use std::io;
+use std::rc::Rc;
+use std::cell::RefCell;
 
 /// Represents the input mode for the controller
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
@@ -97,18 +99,23 @@ pub enum GameAction {
 
 /// Controller for handling user input and key bindings
 pub struct Controller {
-    key_bindings: KeyBindings,
+    key_bindings: Rc<RefCell<KeyBindings>>,
     drag_state: Option<DragState>,
     control_mode: ControlMode,
 }
 
 impl Controller {
     pub fn new() -> Self {
+
         Self {
-            key_bindings: KeyBindings::default(),
+            key_bindings: Rc::new(RefCell::new(KeyBindings::default())),
             drag_state: None,
             control_mode: ControlMode::Mouse,
         }
+    }
+
+    pub fn keybindings(&self) -> Rc<RefCell<KeyBindings>> {
+        self.key_bindings.clone()
     }
 
     fn is_drag_movement(&self, x: u16, y: u16) -> bool {
@@ -223,7 +230,7 @@ impl Controller {
 
     fn map_key_to_action(&self, key: KeyEvent) -> GameAction {
         let code = key.code;
-        let bindings = &self.key_bindings;
+        let bindings = self.key_bindings.borrow();
 
         if code == bindings.quit {
             GameAction::Quit

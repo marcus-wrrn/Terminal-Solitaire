@@ -6,15 +6,16 @@ use ratatui::{
     widgets::{Block, Borders, Clear, Paragraph, Widget, BorderType},
 };
 use std::rc::Rc;
+use std::cell::RefCell;
 use crate::controller::KeyBindings;
 
 pub struct StartupPop {
     is_visible: bool,
-    key_binds: Rc<KeyBindings>
+    key_binds: Rc<RefCell<KeyBindings>>
 }
 
 impl StartupPop {
-    pub fn new(key_bindings: Rc<KeyBindings>) -> Self {
+    pub fn new(key_bindings: Rc<RefCell<KeyBindings>>) -> Self {
         Self {
             is_visible: false,
             key_binds: key_bindings
@@ -42,7 +43,7 @@ impl StartupPop {
 
         Clear.render(popup_area, buf);
 
-        let bindings = &self.key_binds;
+        let bindings = self.key_binds.borrow();
 
         let key_style = Style::default().fg(Color::Cyan).add_modifier(Modifier::BOLD);
         let label_style = Style::default().fg(Color::White);

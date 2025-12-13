@@ -3,6 +3,7 @@ use crate::game_logic::GameState;
 use crate::controller::{GameAction, KeyBindings};
 use ratatui::{buffer::Buffer, layout::Rect};
 use std::rc::Rc;
+use std::cell::RefCell;
 
 pub struct MenuManager {
     options_menu: OptionsMenu,
@@ -11,8 +12,7 @@ pub struct MenuManager {
 }
 
 impl MenuManager {
-    pub fn new() -> Self {
-        let key_bindings = Rc::new(KeyBindings::default());
+    pub fn new(key_bindings: Rc<RefCell<KeyBindings>>) -> Self {
         let mut startup_screen = StartupPop::new(key_bindings);
         startup_screen.show();
         Self {
@@ -84,12 +84,6 @@ impl MenuManager {
             self.options_menu.render(area, buf);
         }
 
-    }
-}
-
-impl Default for MenuManager {
-    fn default() -> Self {
-        Self::new()
     }
 }
 

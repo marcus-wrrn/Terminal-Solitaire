@@ -19,14 +19,16 @@ pub struct GameManager {
 
 impl GameManager {
     pub fn new() -> Self {
+        let controller = Controller::new();
+        let key_bindings = controller.keybindings();
         Self {
             game_state: GameState::new(),
             selection_manager: SelectionManager::new(),
-            controller: Controller::new(),
+            controller: controller,
             debug_log: DebugLog::default(),
             game_renderer: GameRenderer::new(),
             hover_state: HoverState::None,
-            menu_manager: MenuManager::new(),
+            menu_manager: MenuManager::new(key_bindings),
             animation_manager: AnimationManager::new(),
         }
     }
@@ -249,7 +251,7 @@ impl GameManager {
         self.debug_log.clear();
         self.hover_state = HoverState::None;
         self.animation_manager.stop_animation();
-        self.menu_manager = MenuManager::new();
+        self.menu_manager = MenuManager::new(self.controller.keybindings());
     }
 
     pub fn find_valid_moves(&self, selection: &Selection) -> Vec<crate::game_objects::Selection> {
