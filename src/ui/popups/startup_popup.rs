@@ -1,9 +1,9 @@
 use ratatui::{
     buffer::Buffer,
-    layout::{Constraint, Flex, Layout, Rect},
-    style::{Color, Style, Modifier},
+    layout::{self, Constraint, Flex, Layout, Rect},
+    style::{Color, Modifier, Style},
     text::{Line, Span},
-    widgets::{Block, Borders, Clear, Paragraph, Widget, BorderType},
+    widgets::{Block, BorderType, Borders, Clear, Padding, Paragraph, Widget},
 };
 use std::rc::Rc;
 use std::cell::RefCell;
@@ -39,7 +39,7 @@ impl StartupPop {
             return;
         }
 
-        let popup_area = Self::centered_rect(70, 80, area);
+        let popup_area = Self::centered_rect(40, 50, area);
 
         Clear.render(popup_area, buf);
 
@@ -109,13 +109,14 @@ impl StartupPop {
             ]),
         ];
 
-        let help_paragraph = Paragraph::new(help_text);
+        let help_paragraph = Paragraph::new(help_text).alignment(layout::Alignment::Center);
 
         let block = Block::default()
             .borders(Borders::ALL)
             .border_type(BorderType::Thick)
-            .title_top(Line::from(" Game Controls ").centered())
-            .title_bottom(Line::from(" Press any key to start ").centered())
+            .title_top(Line::from(" Game Controls ").left_aligned())
+            .title_bottom(Line::from(" Press any key to start ").right_aligned())
+            .padding(Padding::vertical(2))
             .style(Style::default().fg(Color::LightYellow));
 
         let inner_area = block.inner(popup_area);

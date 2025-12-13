@@ -2,7 +2,7 @@
 
 ## Dev notes
 
-Do not abuse comments and use the UNIX philosophy
+Do not abuse comments
 
 ## Source Files
 
@@ -47,7 +47,7 @@ Handles game input
 
 - `mod.rs` - re-exports KeyBindings, Controller, and GameAction
 - `controller.rs` - Controller struct that handles user input (both mouse + keyboard) and maps to GameActions
-- `key_bindings.rs` - Rebindable keybinds used by Controller
+- `key_bindings.rs` - Rebindable keybinds used by the Controller
 
 ### UI Module (`src/ui`)
 - `mod.rs` - re-exports DebugLog, OptionsMenu, MenuOption, and WinPopup
@@ -65,4 +65,4 @@ Handles game input
 
 ## Tool Usage
 
-Reference the ratatui documentation at https://ratatui.rs/ (high level tutorial) or https://docs.rs/ratatui/latest/ratatui/ (Rust Docs) when developing a new feature with no working examples in the project
+Reference the ratatui documentation at https://ratatui.rs/ (high level tutorial) or https://docs.rs/ratatui/latest/ratatui/ (Rust Docs) when developing a new feature with ratatui where there aren't many examples.

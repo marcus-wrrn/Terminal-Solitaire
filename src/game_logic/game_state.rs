@@ -99,7 +99,13 @@ impl GameState {
                 Ok(())
             }
             (PileType::Foundation, PileType::Tableau) => {
-                Err("Moving from foundation to tableau not yet implemented")
+                if let Some(pile) = self.board.get_foundation_pile(source.pile_index) {
+                    if source.card_index != pile.len() - 1 {
+                        return Err("Can only move top card from foundation");
+                    }
+                }
+                self.board.move_foundation_to_tableau(source.pile_index, target.pile_index)?;
+                Ok(())
             }
             _ => {
                 Err("Invalid move")
@@ -179,6 +185,16 @@ impl GameState {
                 false
             }
             (PileType::Foundation, PileType::Tableau) => {
+                if let Some(pile) = self.board.get_foundation_pile(source.pile_index) {
+                    if source.card_index != pile.len() - 1 {
+                        return false;
+                    }
+                    if let Some(card) = pile.peek() {
+                        if let Some(tableau) = self.board.get_tableau_pile(target.pile_index) {
+                            return tableau.can_place_card(card);
+                        }
+                    }
+                }
                 false
             }
             _ => false,

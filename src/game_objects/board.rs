@@ -187,6 +187,27 @@ impl Board {
         Err("No valid card in stock for this foundation")
     }
 
+    pub fn move_foundation_to_tableau(&mut self, foundation_index: usize, tableau_index: usize) -> Result<(), &'static str> {
+        if foundation_index >= 4 || tableau_index >= 7 {
+            return Err("Invalid pile index");
+        }
+
+        let card = self.foundation[foundation_index].peek()
+            .ok_or("No card in foundation")?
+            .clone();
+
+        if !self.tableau[tableau_index].can_place_card(&card) {
+            return Err("Cannot place card on tableau");
+        }
+
+        if let Some(card) = self.foundation[foundation_index].pop() {
+            self.tableau[tableau_index].add_card(card);
+            Ok(())
+        } else {
+            Err("Failed to move card")
+        }
+    }
+
     pub fn get_card_at_selection(&self, selection: &Selection) -> Option<&Card> {
         if let Some(pile) = self.get_pile(selection.pile, selection.pile_index) {
             return pile.cards.get(selection.card_index);
