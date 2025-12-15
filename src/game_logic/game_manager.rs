@@ -57,16 +57,36 @@ impl GameManager {
                     match action {
                         GameAction::Quit => self.quit_game = true,
                         GameAction::MoveLeft => {
-                            self.selection_manager.move_left(self.game_state.board());
+                            let valid_moves = if let Some(picked_up) = self.selection_manager.picked_up() {
+                                Some(self.find_valid_moves(&picked_up))
+                            } else {
+                                None
+                            };
+                            self.selection_manager.move_left(self.game_state.board(), valid_moves.as_ref());
                         }
                         GameAction::MoveRight => {
-                            self.selection_manager.move_right(self.game_state.board());
+                            let valid_moves = if let Some(picked_up) = self.selection_manager.picked_up() {
+                                Some(self.find_valid_moves(&picked_up))
+                            } else {
+                                None
+                            };
+                            self.selection_manager.move_right(self.game_state.board(), valid_moves.as_ref());
                         }
                         GameAction::MoveUp => {
-                            self.selection_manager.move_up(self.game_state.board());
+                            let valid_moves = if let Some(picked_up) = self.selection_manager.picked_up() {
+                                Some(self.find_valid_moves(&picked_up))
+                            } else {
+                                None
+                            };
+                            self.selection_manager.move_up(self.game_state.board(), valid_moves.as_ref());
                         }
                         GameAction::MoveDown => {
-                            self.selection_manager.move_down(self.game_state.board());
+                            let valid_moves = if let Some(picked_up) = self.selection_manager.picked_up() {
+                                Some(self.find_valid_moves(&picked_up))
+                            } else {
+                                None
+                            };
+                            self.selection_manager.move_down(self.game_state.board(), valid_moves.as_ref());
                         }
                         GameAction::Select | GameAction::Enter => {
                             self.handle_select_action();
@@ -132,6 +152,10 @@ impl GameManager {
                 self.debug_log.log(format!("{}", msg));
             } else {
                 self.selection_manager.pick_up();
+                let valid_moves = self.find_valid_moves(&selection);
+                if !valid_moves.is_empty() {
+                    self.selection_manager.set_selection(valid_moves[0]);
+                }
             }
         }
     }

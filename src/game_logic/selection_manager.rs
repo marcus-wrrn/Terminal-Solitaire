@@ -56,7 +56,14 @@ impl SelectionManager {
 
     // Navigation methods for keyboard control
 
-    pub fn move_left(&mut self, board: &Board) {
+    pub fn move_left(&mut self, board: &Board, valid_moves: Option<&Vec<Selection>>) {
+        if let Some(moves) = valid_moves {
+            if !moves.is_empty() {
+                self.cycle_to_previous_valid_move(moves);
+                return;
+            }
+        }
+
         self.selection = match self.selection.pile {
             PileType::Tableau => {
                 if self.selection.pile_index > 0 {
@@ -90,7 +97,14 @@ impl SelectionManager {
         };
     }
 
-    pub fn move_right(&mut self, board: &Board) {
+    pub fn move_right(&mut self, board: &Board, valid_moves: Option<&Vec<Selection>>) {
+        if let Some(moves) = valid_moves {
+            if !moves.is_empty() {
+                self.cycle_to_next_valid_move(moves);
+                return;
+            }
+        }
+
         self.selection = match self.selection.pile {
             PileType::Tableau => {
                 if self.selection.pile_index < 6 {
@@ -125,7 +139,14 @@ impl SelectionManager {
         };
     }
 
-    pub fn move_up(&mut self, board: &Board) {
+    pub fn move_up(&mut self, board: &Board, valid_moves: Option<&Vec<Selection>>) {
+        if let Some(moves) = valid_moves {
+            if !moves.is_empty() {
+                self.cycle_to_previous_valid_move(moves);
+                return;
+            }
+        }
+
         self.selection = match self.selection.pile {
             PileType::Tableau => {
                 if self.selection.card_index > 0 {
@@ -146,7 +167,14 @@ impl SelectionManager {
         };
     }
 
-    pub fn move_down(&mut self, board: &Board) {
+    pub fn move_down(&mut self, board: &Board, valid_moves: Option<&Vec<Selection>>) {
+        if let Some(moves) = valid_moves {
+            if !moves.is_empty() {
+                self.cycle_to_next_valid_move(moves);
+                return;
+            }
+        }
+
         self.selection = match self.selection.pile {
             PileType::Tableau => {
                 if let Some(pile) = board.get_tableau_pile(self.selection.pile_index) {
@@ -174,6 +202,28 @@ impl SelectionManager {
                 Selection::new(PileType::Tableau, 0, 0)
             }
         };
+    }
+
+    fn cycle_to_next_valid_move(&mut self, valid_moves: &Vec<Selection>) {
+        if let Some(current_index) = valid_moves.iter().position(|&s| s == self.selection) {
+            let next_index = (current_index + 1) % valid_moves.len();
+            self.selection = valid_moves[next_index];
+        } else {
+            self.selection = valid_moves[0];
+        }
+    }
+
+    fn cycle_to_previous_valid_move(&mut self, valid_moves: &Vec<Selection>) {
+        if let Some(current_index) = valid_moves.iter().position(|&s| s == self.selection) {
+            let prev_index = if current_index == 0 {
+                valid_moves.len() - 1
+            } else {
+                current_index - 1
+            };
+            self.selection = valid_moves[prev_index];
+        } else {
+            self.selection = valid_moves[valid_moves.len() - 1];
+        }
     }
 
     fn get_topmost_card_index(board: &Board, pile_type: PileType, pile_index: usize) -> usize {

@@ -68,6 +68,16 @@ impl PileRenderer {
                 area_cp.y = area.y + (pile.len() as u16) * Self::VERTICAL_OVERLAP;
                 self.render_hover_highlight(buf, area_cp, is_valid);
             }
+
+            if is_pile_selected && !pile.is_empty() {
+                if let Some(sel) = selection {
+                    if sel.card_index == pile.len() {
+                        let mut area_cp = area.clone();
+                        area_cp.y = area.y + (pile.len() as u16) * Self::VERTICAL_OVERLAP;
+                        self.render_selection_highlight(buf, area_cp);
+                    }
+                }
+            }
         } else if let Some(card) = pile.peek() {
             let is_card_selected = is_pile_selected && selection.map(|sel| sel.card_index == pile.len() - 1).unwrap_or(false);
             let is_card_picked_up = picked_up
@@ -76,6 +86,14 @@ impl PileRenderer {
             self.card_renderer.render(card, is_card_selected, is_card_picked_up, buf, area.x, area.y);
             if is_hover_target {
                 self.render_hover_highlight(buf, area, is_valid);
+            }
+
+            if is_pile_selected {
+                if let Some(sel) = selection {
+                    if sel.card_index == pile.len() {
+                        self.render_selection_highlight(buf, area);
+                    }
+                }
             }
         }
     }
@@ -139,6 +157,45 @@ impl PileRenderer {
                 border_style,
             );
         }
+    }
+
+    fn render_selection_highlight(&self, buf: &mut Buffer, area: Rect) {
+        let card_area = Rect {
+            x: area.x,
+            y: area.y,
+            width: CardRenderer::WIDTH.min(area.width),
+            height: CardRenderer::HEIGHT.min(area.height),
+        };
+
+        if card_area.x + card_area.width > buf.area.width || card_area.y + card_area.height > buf.area.height {
+            return;
+        }
+
+        let horizontal_count = card_area.width.saturating_sub(2) as usize;
+        let border_style = Style::default().fg(Color::Yellow);
+
+        let top_border = format!("╔{}╗", "═".repeat(horizontal_count));
+        let vertical = "║";
+        let bottom_border = format!("╚{}╝", "═".repeat(horizontal_count));
+
+        buf.set_string(card_area.x, card_area.y, &top_border, border_style);
+
+        for row in 1..card_area.height.saturating_sub(1) {
+            buf.set_string(card_area.x, card_area.y + row, vertical, border_style);
+            buf.set_string(
+                card_area.x + card_area.width - 1,
+                card_area.y + row,
+                vertical,
+                border_style,
+            );
+        }
+
+        buf.set_string(
+            card_area.x,
+            card_area.y + card_area.height - 1,
+            &bottom_border,
+            border_style,
+        );
     }
 
     fn render_hover_highlight(&self, buf: &mut Buffer, area: Rect, is_valid: bool) {

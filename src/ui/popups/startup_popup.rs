@@ -108,9 +108,6 @@ impl StartupPop {
                 Span::styled(" - Quit game", label_style),
             ]),
             Line::from(""),
-            Line::from(vec![
-                Span::styled("Mouse controls are also supported!", Style::default().fg(Color::Green)),
-            ]),
         ];
 
         let help_paragraph = Paragraph::new(help_text).alignment(layout::Alignment::Center);
