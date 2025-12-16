@@ -2,6 +2,7 @@ mod game_objects;
 mod game_logic;
 mod rendering;
 mod controller;
+mod resources;
 mod ui;
 
 use game_logic::GameManager;

@@ -187,6 +187,26 @@ impl Board {
         Err("No valid card in stock for this foundation")
     }
 
+    /// Used during the win state to move any card from the waste pile to the foundation
+    /// Should not be called during normal gameplay
+    pub fn move_waste_card_to_foundation(&mut self, foundation_index: usize) -> Result<(), &'static str> {
+        if foundation_index >= 4 {
+            return Err("Invalid foundation index");
+        }
+
+        for i in 0..self.waste.cards.len() {
+            let card = &self.waste.cards[i];
+
+            if self.foundation[foundation_index].can_place_card(card) {
+                let card = self.waste.cards.remove(i);
+                self.foundation[foundation_index].add_card(card);
+                return Ok(());
+            }
+        }
+
+        Err("No valid card in waste for this foundation")
+    }
+
     pub fn move_foundation_to_tableau(&mut self, foundation_index: usize, tableau_index: usize) -> Result<(), &'static str> {
         if foundation_index >= 4 || tableau_index >= 7 {
             return Err("Invalid pile index");

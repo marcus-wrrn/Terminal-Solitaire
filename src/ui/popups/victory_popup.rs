@@ -5,6 +5,8 @@ use ratatui::{
     text::{Line, Span},
     widgets::{Block, Borders, Clear, Paragraph, Widget, BorderType},
 };
+use crate::ui::figlet::FIGfont;
+use crate::resources::FIGLET_3D_FONT;
 
 pub struct VictoryPop {
     is_visible: bool,
@@ -34,30 +36,25 @@ impl VictoryPop {
             return;
         }
 
-        let popup_area = Self::centered_rect(50, 25, area);
+        let popup_area = Self::centered_rect(70, 40, area);
 
         Clear.render(popup_area, buf);
 
-        let victory_text = vec![
-            Line::from(""),
-            Line::from(vec![
-                Span::styled(
-                    "VICTORY!",
+        let font = FIGfont::from_content(FIGLET_3D_FONT).unwrap();
+        let figure = font.convert("YOU WON").unwrap();
+        let figlet_text = figure.to_string();
+
+        let victory_text: Vec<Line> = figlet_text
+            .lines()
+            .map(|line| {
+                Line::from(Span::styled(
+                    line,
                     Style::default()
                         .fg(Color::Yellow)
                         .add_modifier(Modifier::BOLD),
-                ),
-            ]),
-            Line::from(""),
-            Line::from(vec![
-                Span::styled(
-                    "You won the game!",
-                    Style::default()
-                        .fg(Color::Green)
-                        .add_modifier(Modifier::BOLD),
-                ),
-            ]),
-        ];
+                ))
+            })
+            .collect();
 
         let victory_paragraph = Paragraph::new(victory_text)
             .centered();

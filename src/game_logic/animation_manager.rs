@@ -70,9 +70,9 @@ impl AnimationManager {
 
     fn try_move_next_card(&self, board: &mut Board) -> Result<(), &'static str> {
         // Try moving from waste to any foundation
-        if board.waste.peek().is_some() {
+        if !board.waste.is_empty() {
             for foundation_index in 0..4 {
-                if let Ok(()) = board.move_waste_to_foundation(foundation_index) {
+                if let Ok(()) = board.move_waste_card_to_foundation(foundation_index) {
                     return Ok(());
                 }
             }
