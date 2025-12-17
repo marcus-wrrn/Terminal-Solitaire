@@ -51,7 +51,7 @@ impl StartupPop {
 
         let help_text = vec![
             Line::from(vec![
-                Span::styled("Welcome to Solitaire!", header_style),
+                Span::styled("*Game Guide*", header_style),
             ]),
             Line::from(""),
             Line::from(vec![
@@ -106,6 +106,10 @@ impl StartupPop {
             Line::from(vec![
                 Span::styled(bindings.quit_str(), key_style),
                 Span::styled(" - Quit game", label_style),
+            ]),
+            Line::from(vec![
+                Span::styled(bindings.help_str(), key_style),
+                Span::styled(" - Open Help Menu", label_style)
             ]),
             Line::from(""),
         ];

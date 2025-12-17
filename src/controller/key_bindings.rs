@@ -154,6 +154,10 @@ impl KeyBindings {
     pub fn options_menu_str(&self) -> String {
         Self::key_to_str(&self.options_menu)
     }
+
+    pub fn help_str(&self) -> String {
+        Self::key_to_str(&self.help)
+    }
 }
 
 // impl KeyBindings {
