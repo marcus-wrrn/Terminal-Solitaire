@@ -39,8 +39,7 @@ impl MenuManager {
     }
 
     pub fn show_startup_screen(&mut self) {
-        //self.startup_screen.show();
-        self.victory_screen.show();
+        self.startup_screen.show();
     }
 
     pub fn toggle_options_menu(&mut self) {

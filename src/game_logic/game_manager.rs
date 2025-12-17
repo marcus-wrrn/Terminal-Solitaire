@@ -265,8 +265,8 @@ impl GameManager {
                     MenuOption::Restart => {
                         self.restart_game();
                     }
-                    MenuOption::RebindKeys => {
-                    }
+                    // MenuOption::RebindKeys => {
+                    // }
                     MenuOption::DeveloperMode => {
                         self.debug_log.visible = !self.debug_log.visible; // toggle debug log
                     }
