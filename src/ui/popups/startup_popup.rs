@@ -39,7 +39,7 @@ impl StartupPop {
             return;
         }
 
-        let popup_area = Self::centered_rect(40, 50, area);
+        let popup_area = Self::centered_rect(70, 50, area);
 
         Clear.render(popup_area, buf);
 

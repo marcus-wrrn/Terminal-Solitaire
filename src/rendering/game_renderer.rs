@@ -43,7 +43,7 @@ impl GameRenderer {
         self.render_centered_text(
             buf,
             vertical_sections[0],
-            "=== Solitaire ===",
+            "=== Klondike ===",
             Style::default().fg(Color::Yellow),
         );
 
