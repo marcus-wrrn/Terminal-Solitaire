@@ -1,4 +1,4 @@
-use crate::{game_logic::GameState, game_objects::Board, ui::DebugLog};
+use crate::{game_logic::{GameState, MoveExecutor}, game_objects::Board, ui::DebugLog};
 use std::time::{Duration, Instant};
 
 pub struct AnimationManager {
@@ -72,7 +72,7 @@ impl AnimationManager {
         // Try moving from waste to any foundation
         if !board.waste.is_empty() {
             for foundation_index in 0..4 {
-                if let Ok(()) = board.move_waste_card_to_foundation(foundation_index) {
+                if let Ok(()) = MoveExecutor::move_waste_card_to_foundation(board, foundation_index) {
                     return Ok(());
                 }
             }
@@ -82,7 +82,7 @@ impl AnimationManager {
         for tableau_index in 0..7 {
             if board.tableau[tableau_index].peek().is_some() {
                 for foundation_index in 0..4 {
-                    if let Ok(()) = board.move_card_to_foundation(tableau_index, foundation_index) {
+                    if let Ok(()) = MoveExecutor::move_card_to_foundation(board, tableau_index, foundation_index) {
                         return Ok(());
                     }
                 }
@@ -92,7 +92,7 @@ impl AnimationManager {
         // Try moving from stock to any foundation
         if !board.stock.is_empty() {
             for foundation_index in 0..4 {
-                if let Ok(()) = board.move_stock_to_foundation(foundation_index) {
+                if let Ok(()) = MoveExecutor::move_stock_to_foundation(board, foundation_index) {
                     return Ok(());
                 }
             }

@@ -1,4 +1,5 @@
 use crate::game_objects::{Board, Deck, PileType, Selection};
+use crate::game_logic::MoveExecutor;
 
 pub struct GameState {
     board: Board,
@@ -74,7 +75,8 @@ impl GameState {
 
         match (source.pile, target.pile) {
             (PileType::Tableau, PileType::Tableau) => {
-                self.board.move_card_to_tableau(
+                MoveExecutor::move_card_to_tableau(
+                    &mut self.board,
                     source.pile_index,
                     target.pile_index,
                     source.card_index
@@ -87,15 +89,15 @@ impl GameState {
                         return Err("Can only move top card to foundation");
                     }
                 }
-                self.board.move_card_to_foundation(source.pile_index, target.pile_index)?;
+                MoveExecutor::move_card_to_foundation(&mut self.board, source.pile_index, target.pile_index)?;
                 Ok(())
             }
             (PileType::Waste, PileType::Tableau) => {
-                self.board.move_waste_to_tableau(target.pile_index)?;
+                MoveExecutor::move_waste_to_tableau(&mut self.board, target.pile_index)?;
                 Ok(())
             }
             (PileType::Waste, PileType::Foundation) => {
-                self.board.move_waste_to_foundation(target.pile_index)?;
+                MoveExecutor::move_waste_to_foundation(&mut self.board, target.pile_index)?;
                 Ok(())
             }
             (PileType::Foundation, PileType::Tableau) => {
@@ -104,7 +106,7 @@ impl GameState {
                         return Err("Can only move top card from foundation");
                     }
                 }
-                self.board.move_foundation_to_tableau(source.pile_index, target.pile_index)?;
+                MoveExecutor::move_foundation_to_tableau(&mut self.board, source.pile_index, target.pile_index)?;
                 Ok(())
             }
             _ => {
@@ -114,13 +116,13 @@ impl GameState {
     }
 
     pub fn draw_from_stock(&mut self) -> Result<(), &'static str> {
-        if self.board.draw_from_stock() {
+        if MoveExecutor::draw_from_stock(&mut self.board) {
             Ok(())
         } else {
             if self.board.waste.is_empty() {
                 Err("Stock is empty")
             } else {
-                self.board.reset_stock();
+                MoveExecutor::reset_stock(&mut self.board);
                 Ok(())
             }
         }
