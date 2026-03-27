@@ -23,13 +23,16 @@ Pure data structures representing game entities. This module has no dependencies
 ### Game Logic Module (`src/game_logic/`)
 Orchestrates game state and manages game mechanics. Depends on game_objects and rendering but not vice versa.
 
-- `mod.rs` - re-exports GameState, GameManager, SelectionNavigator, AnimationManager, HoverState, MenuManager, and MenuAction
-- `game_state.rs` - GameState struct that holds the board and current selection, handles selection state updates
+- `mod.rs` - re-exports GameManager, MenuManager, MenuAction, and all klondike types
 - `game_manager.rs` - GameManager struct that runs the main game loop, processes input, and coordinates rendering
-- `selection_navigator.rs` - SelectionNavigator handles keyboard-based navigation and movement of the selection cursor across different pile types
-- `animation_manager.rs` - AnimationManager handles win animations and auto-play sequences when game is won or all tableau cards are face up
-- `hover_state.rs` - HoverState enum representing mouse hover states (Valid, Invalid, or None)
 - `menu_manager.rs` - MenuManager coordinates the options menu and victory screen, processes menu actions
+- `klondike/` - Klondike solitaire-specific logic
+  - `mod.rs` - re-exports GameState, SelectionManager, AnimationManager, HoverState, and MoveExecutor
+  - `game_state.rs` - GameState struct that holds the board, handles pick up/place/draw actions and win condition
+  - `selection_manager.rs` - SelectionManager tracks the cursor selection and picked-up cards, handles keyboard navigation
+  - `animation_manager.rs` - AnimationManager handles win animations and auto-play sequences when game is won or all tableau cards are face up
+  - `hover_state.rs` - HoverState enum representing mouse hover states (Valid, Invalid, or None)
+  - `move_executor.rs` - MoveExecutor performs all low-level card moves between piles on the board
 
 ### Rendering Module (`src/rendering`)
 Renders game objects 

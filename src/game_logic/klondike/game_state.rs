@@ -1,5 +1,5 @@
 use crate::game_objects::{Board, Deck, PileType, Selection};
-use crate::game_logic::MoveExecutor;
+use crate::game_logic::klondike::MoveExecutor;
 
 pub struct GameState {
     board: Board,

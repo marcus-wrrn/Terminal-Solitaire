@@ -1,4 +1,4 @@
-use crate::{game_logic::{GameState, MoveExecutor}, game_objects::Board, ui::DebugLog};
+use crate::{game_logic::klondike::{GameState, MoveExecutor}, game_objects::Board, ui::DebugLog};
 use std::time::{Duration, Instant};
 
 pub struct AnimationManager {
