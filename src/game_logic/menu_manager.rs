@@ -1,5 +1,4 @@
 use crate::ui::{OptionsMenu, MenuOption, MainMenu, MainMenuOption, popups::{VictoryPop, StartupPop}};
-use crate::game_logic::GameState;
 use crate::controller::{GameAction, KeyBindings};
 use ratatui::{buffer::Buffer, layout::Rect};
 use std::rc::Rc;
@@ -119,10 +118,8 @@ impl MenuManager {
         return menu_action;
     }
 
-    pub fn handle_game_state(&mut self, game_state: &GameState) {
-        if game_state.has_won() {
-            self.victory_screen.show();
-        }
+    pub fn show_victory_screen(&mut self) {
+        self.victory_screen.show();
     }
 
     pub fn render_main_menu(&self, area: Rect, buf: &mut Buffer) {
