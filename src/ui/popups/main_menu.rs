@@ -11,7 +11,8 @@ use crate::resources::FIGLET_3D_FONT;
 
 #[derive(Debug, Clone, Copy, PartialEq)]
 pub enum MainMenuOption {
-    Play,
+    Klondike,
+    Balaterm,
     Settings,
     Quit,
 }
@@ -19,7 +20,8 @@ pub enum MainMenuOption {
 impl MainMenuOption {
     fn all() -> Vec<MainMenuOption> {
         vec![
-            MainMenuOption::Play,
+            MainMenuOption::Klondike,
+            MainMenuOption::Balaterm,
             MainMenuOption::Settings,
             MainMenuOption::Quit,
         ]
@@ -27,7 +29,8 @@ impl MainMenuOption {
 
     fn label(&self) -> &str {
         match self {
-            MainMenuOption::Play => "Start Game",
+            MainMenuOption::Klondike => "Klondike",
+            MainMenuOption::Balaterm => "Balaterm",
             MainMenuOption::Settings => "Settings",
             MainMenuOption::Quit => "Quit",
         }

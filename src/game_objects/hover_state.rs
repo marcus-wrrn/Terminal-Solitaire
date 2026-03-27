@@ -1,4 +1,4 @@
-use crate::game_objects::Selection;
+use super::selection::Selection;
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
 pub enum HoverState {
