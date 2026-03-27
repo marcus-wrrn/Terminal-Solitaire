@@ -4,6 +4,7 @@ pub mod pile;
 pub mod board;
 pub mod selection;
 pub mod hover_state;
+pub mod hand;
 
 #[cfg(test)]
 mod tests;
@@ -14,3 +15,4 @@ pub use pile::{Pile, PileType};
 pub use board::Board;
 pub use selection::Selection;
 pub use hover_state::HoverState;
+pub use hand::{Hand, HandSlot};
