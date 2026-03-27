@@ -2,11 +2,17 @@ use crate::game_logic::{GameState, SelectionManager, AnimationManager, HoverStat
 use crate::game_objects::{PileType, Selection};
 use crate::rendering::{GameRenderer, RenderingInstructions};
 use crate::controller::{Controller, GameAction};
-use crate::ui::{DebugLog, MenuOption};
+use crate::ui::{DebugLog, MenuOption, MainMenuOption};
 use ratatui::{DefaultTerminal, Frame};
 use std::io;
 
+enum AppState {
+    MainMenu,
+    InGame,
+}
+
 pub struct GameManager {
+    app_state: AppState,
     game_state: GameState,
     selection_manager: SelectionManager,
     controller: Controller,
@@ -23,6 +29,7 @@ impl GameManager {
         let controller = Controller::new();
         let key_bindings = controller.keybindings();
         Self {
+            app_state: AppState::MainMenu,
             game_state: GameState::new(),
             selection_manager: SelectionManager::new(),
             controller: controller,
@@ -41,15 +48,22 @@ impl GameManager {
                 break;
             }
             terminal.draw(|frame| self.draw(frame))?;
-            self.animation_manager.process_game_state(&mut self.game_state, &mut self.debug_log);
-            self.menu_manager.handle_game_state(&self.game_state);
 
-            if self.controller.is_keyboard_mode() {
-                self.selection_manager.set_visible(true);
-            } 
+            if let AppState::InGame = self.app_state {
+                self.animation_manager.process_game_state(&mut self.game_state, &mut self.debug_log);
+                self.menu_manager.handle_game_state(&self.game_state);
+
+                if self.controller.is_keyboard_mode() {
+                    self.selection_manager.set_visible(true);
+                }
+            }
 
             if let Some(action) = self.controller.poll_action()? {
-                if self.menu_manager.is_menu_active() {
+                if let AppState::MainMenu = self.app_state {
+                    if let Some(menu_action) = self.menu_manager.handle_main_menu(action) {
+                        self.handle_main_menu_action(menu_action);
+                    }
+                } else if self.menu_manager.is_menu_active() {
                     if let Some(menu_action) = self.menu_manager.handle_menu(action) {
                         self.handle_menu_action(menu_action);
                     }
@@ -255,6 +269,24 @@ impl GameManager {
         self.hover_state = HoverState::None;
     }
 
+    fn handle_main_menu_action(&mut self, menu_action: MenuAction) {
+        match menu_action {
+            MenuAction::MainMenuSelected(option) => match option {
+                MainMenuOption::Play => {
+                    self.app_state = AppState::InGame;
+                }
+                MainMenuOption::Settings => {
+                    self.app_state = AppState::InGame;
+                    self.menu_manager.toggle_options_menu();
+                }
+                MainMenuOption::Quit => {
+                    self.quit_game = true;
+                }
+            },
+            _ => {}
+        }
+    }
+
     fn handle_menu_action(&mut self, menu_action: MenuAction) {
         match menu_action {
             MenuAction::OptionSelected(option) => {
@@ -286,7 +318,7 @@ impl GameManager {
         self.hover_state = HoverState::None;
         self.animation_manager.stop_animation();
         self.menu_manager = MenuManager::new(self.controller.keybindings());
-        self.menu_manager.hide_startup_screen();
+        self.menu_manager.hide_main_menu();
     }
 
     pub fn find_valid_moves(&self, selection: &Selection) -> Vec<crate::game_objects::Selection> {
@@ -329,6 +361,11 @@ impl GameManager {
     }
 
     pub fn draw(&mut self, frame: &mut Frame) {
+        if let AppState::MainMenu = self.app_state {
+            self.menu_manager.render_main_menu(frame.area(), frame.buffer_mut());
+            return;
+        }
+
         let selection = self.selection_manager.selection_if_visible();
         let picked_up = self.selection_manager.picked_up();
         let rendering_instr = RenderingInstructions::new(

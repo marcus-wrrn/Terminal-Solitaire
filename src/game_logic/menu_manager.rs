@@ -1,4 +1,4 @@
-use crate::ui::{OptionsMenu, MenuOption, popups::{VictoryPop, StartupPop}};
+use crate::ui::{OptionsMenu, MenuOption, MainMenu, MainMenuOption, popups::{VictoryPop, StartupPop}};
 use crate::game_logic::GameState;
 use crate::controller::{GameAction, KeyBindings};
 use ratatui::{buffer::Buffer, layout::Rect};
@@ -9,6 +9,7 @@ pub struct MenuManager {
     options_menu: OptionsMenu,
     victory_screen: VictoryPop,
     startup_screen: StartupPop,
+    main_menu: MainMenu,
 }
 
 #[derive(Debug, Clone, Copy, PartialEq)]
@@ -16,26 +17,29 @@ pub enum MenuAction {
     CloseMenu,
     Navigate,
     OptionSelected(MenuOption),
+    MainMenuSelected(MainMenuOption),
 }
 
 
 impl MenuManager {
     pub fn new(key_bindings: Rc<RefCell<KeyBindings>>) -> Self {
-        let mut startup_screen = StartupPop::new(key_bindings);
-        startup_screen.show();
+        let startup_screen = StartupPop::new(key_bindings);
+        let mut main_menu = MainMenu::new();
+        main_menu.show();
         Self {
             options_menu: OptionsMenu::new(),
             victory_screen: VictoryPop::new(),
-            startup_screen
+            startup_screen,
+            main_menu,
         }
+    }
+
+    pub fn hide_main_menu(&mut self) {
+        self.main_menu.hide();
     }
 
     pub fn is_menu_active(&self) -> bool {
         self.options_menu.is_visible() || self.startup_screen.is_visible()
-    }
-
-    pub fn hide_startup_screen(&mut self) {
-        self.startup_screen.hide();
     }
 
     pub fn show_startup_screen(&mut self) {
@@ -46,8 +50,35 @@ impl MenuManager {
         self.options_menu.toggle();
     }
 
+    pub fn handle_main_menu(&mut self, action: GameAction) -> Option<MenuAction> {
+        if !self.main_menu.is_visible() {
+            return None;
+        }
+
+        match action {
+            GameAction::MoveUp => {
+                self.main_menu.move_up();
+                Some(MenuAction::Navigate)
+            }
+            GameAction::MoveDown => {
+                self.main_menu.move_down();
+                Some(MenuAction::Navigate)
+            }
+            GameAction::Select | GameAction::Enter => {
+                let selected = self.main_menu.selected_option();
+                self.main_menu.hide();
+                Some(MenuAction::MainMenuSelected(selected))
+            }
+            GameAction::Quit => {
+                self.main_menu.hide();
+                Some(MenuAction::MainMenuSelected(MainMenuOption::Quit))
+            }
+            _ => None,
+        }
+    }
+
     pub fn handle_menu(&mut self, action: GameAction) -> Option<MenuAction> {
-        // hide startup menu on any key press
+        // hide startup help menu on any key press
         if self.startup_screen.is_visible() {
             self.startup_screen.hide();
         }
@@ -86,6 +117,10 @@ impl MenuManager {
         }
     }
 
+    pub fn render_main_menu(&self, area: Rect, buf: &mut Buffer) {
+        self.main_menu.render(area, buf);
+    }
+
     pub fn render(&self, area: Rect, buf: &mut Buffer) {
         if self.startup_screen.is_visible() {
             self.startup_screen.render(area, buf);
@@ -99,6 +134,5 @@ impl MenuManager {
         if self.options_menu.is_visible() {
             self.options_menu.render(area, buf);
         }
-
     }
 }

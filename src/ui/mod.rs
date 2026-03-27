@@ -5,3 +5,4 @@ pub mod popups;
 
 pub use debug::DebugLog;
 pub use options_menu::{OptionsMenu, MenuOption};
+pub use popups::{MainMenu, MainMenuOption};
