@@ -9,6 +9,7 @@ use std::io;
 enum AppState {
     MainMenu,
     InGame,
+    Settings { came_from_game: bool },
 }
 
 pub struct GameManager {
@@ -62,6 +63,10 @@ impl GameManager {
                 if let AppState::MainMenu = self.app_state {
                     if let Some(menu_action) = self.menu_manager.handle_main_menu(action) {
                         self.handle_main_menu_action(menu_action);
+                    }
+                } else if let AppState::Settings { came_from_game } = self.app_state {
+                    if let Some(menu_action) = self.menu_manager.handle_menu(action) {
+                        self.handle_settings_action(menu_action, came_from_game);
                     }
                 } else if self.menu_manager.is_menu_active() {
                     if let Some(menu_action) = self.menu_manager.handle_menu(action) {
@@ -117,7 +122,8 @@ impl GameManager {
                             self.restart_game();
                         }
                         GameAction::OptionsMenu => {
-                            self.menu_manager.toggle_options_menu();
+                            self.app_state = AppState::Settings { came_from_game: true };
+                            self.menu_manager.show_options_menu();
                         }
                         GameAction::LeftMousePress(x, y) => {
                             self.handle_left_mouse_press(x, y);
@@ -276,13 +282,52 @@ impl GameManager {
                     self.app_state = AppState::InGame;
                 }
                 MainMenuOption::Settings => {
-                    self.app_state = AppState::InGame;
-                    self.menu_manager.toggle_options_menu();
+                    self.app_state = AppState::Settings { came_from_game: false };
+                    self.menu_manager.show_options_menu();
                 }
                 MainMenuOption::Quit => {
                     self.quit_game = true;
                 }
             },
+            _ => {}
+        }
+    }
+
+    fn handle_settings_action(&mut self, menu_action: MenuAction, came_from_game: bool) {
+        match menu_action {
+            MenuAction::CloseMenu => {
+                if came_from_game {
+                    self.app_state = AppState::InGame;
+                } else {
+                    self.app_state = AppState::MainMenu;
+                    self.menu_manager.show_main_menu();
+                }
+            }
+            MenuAction::OptionSelected(option) => {
+                match option {
+                    MenuOption::Quit => {
+                        self.quit_game = true;
+                    }
+                    MenuOption::Restart => {
+                        self.restart_game();
+                        self.app_state = AppState::InGame;
+                    }
+                    MenuOption::DeveloperMode => {
+                        self.debug_log.visible = !self.debug_log.visible;
+                        self.app_state = if came_from_game { AppState::InGame } else { AppState::MainMenu };
+                        if !came_from_game {
+                            self.menu_manager.show_main_menu();
+                        }
+                    }
+                    MenuOption::Help => {
+                        self.menu_manager.show_startup_screen();
+                        self.app_state = if came_from_game { AppState::InGame } else { AppState::MainMenu };
+                        if !came_from_game {
+                            self.menu_manager.show_main_menu();
+                        }
+                    }
+                }
+            }
             _ => {}
         }
     }
@@ -361,22 +406,40 @@ impl GameManager {
     }
 
     pub fn draw(&mut self, frame: &mut Frame) {
-        if let AppState::MainMenu = self.app_state {
-            self.menu_manager.render_main_menu(frame.area(), frame.buffer_mut());
-            return;
+        match self.app_state {
+            AppState::MainMenu => {
+                self.menu_manager.render_main_menu(frame.area(), frame.buffer_mut());
+            }
+            AppState::Settings { came_from_game } => {
+                if came_from_game {
+                    let selection = self.selection_manager.selection_if_visible();
+                    let picked_up = self.selection_manager.picked_up();
+                    let rendering_instr = RenderingInstructions::new(
+                        self.game_state.board(),
+                        selection,
+                        picked_up.as_ref(),
+                        &self.hover_state,
+                        &self.debug_log
+                    );
+                    self.game_renderer.render(frame.area(), frame.buffer_mut(), &rendering_instr);
+                } else {
+                    self.menu_manager.render_main_menu(frame.area(), frame.buffer_mut());
+                }
+                self.menu_manager.render(frame.area(), frame.buffer_mut());
+            }
+            AppState::InGame => {
+                let selection = self.selection_manager.selection_if_visible();
+                let picked_up = self.selection_manager.picked_up();
+                let rendering_instr = RenderingInstructions::new(
+                    self.game_state.board(),
+                    selection,
+                    picked_up.as_ref(),
+                    &self.hover_state,
+                    &self.debug_log
+                );
+                self.game_renderer.render(frame.area(), frame.buffer_mut(), &rendering_instr);
+                self.menu_manager.render(frame.area(), frame.buffer_mut());
+            }
         }
-
-        let selection = self.selection_manager.selection_if_visible();
-        let picked_up = self.selection_manager.picked_up();
-        let rendering_instr = RenderingInstructions::new(
-            self.game_state.board(),
-            selection,
-            picked_up.as_ref(),
-            &self.hover_state,
-            &self.debug_log
-        );
-
-        self.game_renderer.render(frame.area(), frame.buffer_mut(), &rendering_instr);
-        self.menu_manager.render(frame.area(), frame.buffer_mut());
     }
 }

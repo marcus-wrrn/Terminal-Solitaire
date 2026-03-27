@@ -50,15 +50,15 @@ impl OptionsMenu {
         }
     }
 
+    pub fn show(&mut self) {
+        self.is_visible = true;
+    }
+
     pub fn hide(&mut self) {
         self.is_visible = false;
     }
 
-    pub fn toggle(&mut self) {
-        self.is_visible = !self.is_visible;
-    }
-
-    pub fn is_visible(&self) -> bool {
+pub fn is_visible(&self) -> bool {
         self.is_visible
     }
 

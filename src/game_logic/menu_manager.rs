@@ -46,8 +46,12 @@ impl MenuManager {
         self.startup_screen.show();
     }
 
-    pub fn toggle_options_menu(&mut self) {
-        self.options_menu.toggle();
+    pub fn show_options_menu(&mut self) {
+        self.options_menu.show();
+    }
+
+    pub fn show_main_menu(&mut self) {
+        self.main_menu.show();
     }
 
     pub fn handle_main_menu(&mut self, action: GameAction) -> Option<MenuAction> {

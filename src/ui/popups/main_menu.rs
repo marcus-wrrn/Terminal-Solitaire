@@ -95,7 +95,7 @@ impl MainMenu {
 
     fn render_title(&self, area: Rect, buf: &mut Buffer) {
         let font = FIGfont::from_content(FIGLET_3D_FONT).unwrap();
-        let menu_text = font.convert("").unwrap().to_string();
+        let menu_text = font.convert("Cards").unwrap().to_string();
 
         let text_width = menu_text
             .lines()
