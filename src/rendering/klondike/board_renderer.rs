@@ -1,6 +1,7 @@
 use crate::game_objects::{Board, Pile, PileType, Selection, HoverState};
-use crate::rendering::render_instructions::BoardRenderingIntr;
-use crate::rendering::{card_renderer::CardRenderer, pile_renderer::PileRenderer};
+use crate::rendering::klondike::render_instructions::BoardRenderingIntr;
+use crate::rendering::card_renderer::CardRenderer;
+use crate::rendering::klondike::pile_renderer::PileRenderer;
 use ratatui::{
     buffer::Buffer,
     layout::{Constraint, Flex, Layout, Rect},

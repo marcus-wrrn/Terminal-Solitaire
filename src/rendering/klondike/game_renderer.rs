@@ -1,4 +1,4 @@
-use crate::rendering::RenderingInstructions;
+use crate::rendering::klondike::RenderingInstructions;
 use crate::game_objects::{Board, Selection};
 use super::board_renderer::BoardRenderer;
 use ratatui::{

@@ -2,7 +2,7 @@ use crate::controller::GameAction;
 use crate::game_logic::balaterm::BalatermState;
 use crate::game_logic::game_handler::{AppTransition, GameHandler};
 use crate::game_logic::MenuManager;
-use crate::rendering::hand_renderer::HandRenderer;
+use crate::rendering::balaterm::HandRenderer;
 use crate::rendering::GameRenderer;
 use crate::ui::DebugLog;
 use ratatui::{
