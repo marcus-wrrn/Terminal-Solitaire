@@ -305,6 +305,14 @@ impl GameManager {
             }
             MenuAction::OptionSelected(option) => {
                 match option {
+                    MenuOption::Back => {
+                        if came_from_game {
+                            self.app_state = AppState::InGame;
+                        } else {
+                            self.app_state = AppState::MainMenu;
+                            self.menu_manager.show_main_menu();
+                        }
+                    }
                     MenuOption::Quit => {
                         self.quit_game = true;
                     }
@@ -336,6 +344,9 @@ impl GameManager {
         match menu_action {
             MenuAction::OptionSelected(option) => {
                 match option {
+                    MenuOption::Back => {
+                        self.menu_manager.hide_options_menu();
+                    }
                     MenuOption::Quit => {
                         self.quit_game = true;
                     }
@@ -345,7 +356,7 @@ impl GameManager {
                     // MenuOption::RebindKeys => {
                     // }
                     MenuOption::DeveloperMode => {
-                        self.debug_log.visible = !self.debug_log.visible; // toggle debug log
+                        self.debug_log.visible = !self.debug_log.visible;
                     }
                     MenuOption::Help => {
                         self.menu_manager.show_startup_screen();

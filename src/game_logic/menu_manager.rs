@@ -50,6 +50,10 @@ impl MenuManager {
         self.options_menu.show();
     }
 
+    pub fn hide_options_menu(&mut self) {
+        self.options_menu.hide();
+    }
+
     pub fn show_main_menu(&mut self) {
         self.main_menu.show();
     }

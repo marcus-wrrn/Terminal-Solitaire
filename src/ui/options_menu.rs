@@ -8,6 +8,7 @@ use ratatui::{
 
 #[derive(Debug, Clone, Copy, PartialEq)]
 pub enum MenuOption {
+    Back,
     Quit,
     Restart,
     // RebindKeys,
@@ -18,17 +19,19 @@ pub enum MenuOption {
 impl MenuOption {
     fn all() -> Vec<MenuOption> {
         vec![
-            MenuOption::Quit,
+            MenuOption::Back,
             MenuOption::Restart,
             // MenuOption::RebindKeys,
             MenuOption::Help,
             MenuOption::DeveloperMode,
+            MenuOption::Quit,
         ]
     }
 
     fn label(&self) -> &str {
         match self {
-            MenuOption::Quit => "Quit",
+            MenuOption::Back => "Back",
+            MenuOption::Quit => "Exit Game",
             MenuOption::Restart => "Restart Game",
             // MenuOption::RebindKeys => "Rebind Keys",
             MenuOption::DeveloperMode => "Developer Log",
@@ -84,7 +87,7 @@ pub fn is_visible(&self) -> bool {
             return;
         }
 
-        let popup_area = Self::centered_rect(40, 12, area);
+        let popup_area = Self::centered_rect(40, 14, area);
 
         Clear.render(popup_area, buf);
 
