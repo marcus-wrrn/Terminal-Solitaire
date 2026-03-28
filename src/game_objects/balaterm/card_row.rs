@@ -1,10 +1,10 @@
 use crate::game_objects::Card;
 
-pub struct HandSlot {
+pub struct CardSlot {
     pub card: Option<Card>,
 }
 
-impl HandSlot {
+impl CardSlot {
     pub fn new() -> Self {
         Self { card: None }
     }
@@ -28,14 +28,14 @@ impl HandSlot {
 
 /// A horizontal row of card slots. Each slot holds at most one card.
 /// The number of slots can grow or shrink dynamically.
-pub struct Hand {
-    pub slots: Vec<HandSlot>,
+pub struct CardRow {
+    pub slots: Vec<CardSlot>,
 }
 
-impl Hand {
+impl CardRow {
     pub fn new(capacity: usize) -> Self {
         Self {
-            slots: (0..capacity).map(|_| HandSlot::new()).collect(),
+            slots: (0..capacity).map(|_| CardSlot::new()).collect(),
         }
     }
 
@@ -44,7 +44,7 @@ impl Hand {
     }
 
     pub fn add_slot(&mut self) {
-        self.slots.push(HandSlot::new());
+        self.slots.push(CardSlot::new());
     }
 
     /// Remove the last slot. Returns any card that was in the removed slot.

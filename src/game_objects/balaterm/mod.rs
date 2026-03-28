@@ -1,3 +1,3 @@
-pub mod hand;
+pub mod card_row;
 
-pub use hand::Hand;
+pub use card_row::CardRow;

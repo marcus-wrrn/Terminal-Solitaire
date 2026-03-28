@@ -2,24 +2,21 @@ use crate::controller::GameAction;
 use crate::game_logic::balaterm::BalatermState;
 use crate::game_logic::game_handler::{AppTransition, GameHandler};
 use crate::game_logic::MenuManager;
-use crate::rendering::balaterm::HandRenderer;
+use crate::rendering::balaterm::{BalatermGameRenderer, BalatermRenderingInstructions};
 use crate::rendering::GameRenderer;
 use crate::ui::DebugLog;
-use ratatui::{
-    buffer::Buffer,
-    layout::{Constraint, Flex, Layout, Rect},
-};
+use ratatui::{buffer::Buffer, layout::Rect};
 
 pub struct BalatermGame {
     game_state: BalatermState,
-    hand_renderer: HandRenderer,
+    game_renderer: BalatermGameRenderer,
 }
 
 impl BalatermGame {
     pub fn new() -> Self {
         Self {
             game_state: BalatermState::new(),
-            hand_renderer: HandRenderer::new(),
+            game_renderer: BalatermGameRenderer::new(),
         }
     }
 }
@@ -38,24 +35,15 @@ impl GameHandler for BalatermGame {
 
     fn update(&mut self, _menu_manager: &mut MenuManager, _debug_log: &mut DebugLog) {}
 
-    fn draw(&self, area: Rect, buf: &mut Buffer, _renderer: &mut GameRenderer, _debug_log: &DebugLog) {
-        let sections = Layout::vertical([
-            Constraint::Min(0),
-            Constraint::Length(crate::rendering::card_renderer::CardRenderer::HEIGHT),
-        ])
-        .flex(Flex::Center)
-        .split(area);
-
-        let hand_area = sections[1];
-
-        for (i, hand) in self.game_state.hands.iter().enumerate() {
-            let y_offset = i as u16 * (crate::rendering::card_renderer::CardRenderer::HEIGHT + 1);
-            let row_area = Rect {
-                y: hand_area.y + y_offset,
-                ..hand_area
-            };
-            self.hand_renderer.render(hand, None, buf, row_area);
-        }
+    fn draw(&self, area: Rect, buf: &mut Buffer, _renderer: &mut GameRenderer, debug_log: &DebugLog) {
+        let instr = BalatermRenderingInstructions {
+            title: "Balaterm",
+            hands: &self.game_state.hands,
+            selected_hand: None,
+            selected_slot: None,
+            debug_log,
+        };
+        self.game_renderer.render(area, buf, &instr);
     }
 
     fn restart(&self) -> Box<dyn GameHandler> {

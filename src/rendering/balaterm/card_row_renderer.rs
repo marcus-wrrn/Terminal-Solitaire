@@ -1,4 +1,4 @@
-use crate::game_objects::Hand;
+use crate::game_objects::CardRow;
 use crate::rendering::card_renderer::CardRenderer;
 use ratatui::{
     buffer::Buffer,
@@ -6,11 +6,11 @@ use ratatui::{
     style::{Color, Style},
 };
 
-pub struct HandRenderer {
+pub struct CardRowRenderer {
     card_renderer: CardRenderer,
 }
 
-impl HandRenderer {
+impl CardRowRenderer {
     pub const SLOT_SPACING: u16 = 1;
 
     pub fn new() -> Self {
@@ -19,16 +19,16 @@ impl HandRenderer {
         }
     }
 
-    /// Renders a Hand as a horizontal row of card slots.
+    /// Renders a CardRow as a horizontal row of card slots.
     /// `selected_slot` is the index of the currently selected slot, if any.
     pub fn render(
         &self,
-        hand: &Hand,
+        card_row: &CardRow,
         selected_slot: Option<usize>,
         buf: &mut Buffer,
         area: Rect,
     ) {
-        for (i, slot) in hand.slots.iter().enumerate() {
+        for (i, slot) in card_row.slots.iter().enumerate() {
             let x = area.x + (i as u16) * (CardRenderer::WIDTH + Self::SLOT_SPACING);
             if x + CardRenderer::WIDTH > buf.area.width {
                 break;
@@ -47,8 +47,8 @@ impl HandRenderer {
         }
     }
 
-    /// Returns the total width a hand with `capacity` slots would occupy.
-    pub fn hand_width(capacity: usize) -> u16 {
+    /// Returns the total width a row with `capacity` slots would occupy.
+    pub fn row_width(capacity: usize) -> u16 {
         if capacity == 0 {
             return 0;
         }

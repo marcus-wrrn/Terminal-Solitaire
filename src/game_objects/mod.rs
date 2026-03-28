@@ -15,4 +15,4 @@ pub use pile::{Pile, PileType};
 pub use selection::Selection;
 pub use hover_state::HoverState;
 pub use klondike::Board;
-pub use balaterm::Hand;
+pub use balaterm::CardRow;
