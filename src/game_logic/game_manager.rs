@@ -24,13 +24,15 @@ impl GameManager {
     pub fn new() -> Self {
         let controller = Controller::new();
         let key_bindings = controller.keybindings();
+        let mut menu_manager = MenuManager::new(key_bindings);
+        menu_manager.show_startup_screen();
         Self {
             app_state: AppState::InGame,
             game: Box::new(KlondikeGame::new()),
             controller,
             debug_log: DebugLog::default(),
             game_renderer: GameRenderer::new(),
-            menu_manager: MenuManager::new(key_bindings),
+            menu_manager,
             quit_game: false,
         }
     }
