@@ -1,14 +1,13 @@
-use crate::game_logic::{MenuManager, MenuAction, GameHandler, AppTransition, KlondikeGame, BalatermGame};
+use crate::game_logic::{MenuManager, MenuAction, GameHandler, AppTransition, KlondikeGame};
 use crate::controller::{Controller, GameAction};
-use crate::ui::{DebugLog, MenuOption, MainMenuOption};
+use crate::ui::{DebugLog, MenuOption};
 use crate::rendering::GameRenderer;
 use ratatui::{DefaultTerminal, Frame};
 use std::io;
 
 enum AppState {
-    MainMenu,
     InGame,
-    Settings { came_from_game: bool },
+    Settings,
 }
 
 pub struct GameManager {
@@ -26,7 +25,7 @@ impl GameManager {
         let controller = Controller::new();
         let key_bindings = controller.keybindings();
         Self {
-            app_state: AppState::MainMenu,
+            app_state: AppState::InGame,
             game: Box::new(KlondikeGame::new()),
             controller,
             debug_log: DebugLog::default(),
@@ -52,13 +51,9 @@ impl GameManager {
             }
 
             if let Some(action) = self.controller.poll_action()? {
-                if let AppState::MainMenu = self.app_state {
-                    if let Some(menu_action) = self.menu_manager.handle_main_menu(action) {
-                        self.handle_main_menu_action(menu_action);
-                    }
-                } else if let AppState::Settings { came_from_game } = self.app_state {
+                if let AppState::Settings = self.app_state {
                     if let Some(menu_action) = self.menu_manager.handle_menu(action) {
-                        self.handle_settings_action(menu_action, came_from_game);
+                        self.handle_settings_action(menu_action);
                     }
                 } else if self.menu_manager.is_menu_active() {
                     if let Some(menu_action) = self.menu_manager.handle_menu(action) {
@@ -97,55 +92,22 @@ impl GameManager {
             AppTransition::Quit => self.quit_game = true,
             AppTransition::Restart => self.restart_game(),
             AppTransition::OpenSettings => {
-                self.app_state = AppState::Settings { came_from_game: true };
+                self.app_state = AppState::Settings;
                 self.menu_manager.show_options_menu();
             }
             AppTransition::ShowHelp => self.menu_manager.show_startup_screen(),
         }
     }
 
-    fn handle_main_menu_action(&mut self, menu_action: MenuAction) {
-        match menu_action {
-            MenuAction::MainMenuSelected(option) => match option {
-                MainMenuOption::Klondike => {
-                    self.game = Box::new(KlondikeGame::new());
-                    self.app_state = AppState::InGame;
-                }
-                MainMenuOption::Balaterm => {
-                    self.game = Box::new(BalatermGame::new());
-                    self.app_state = AppState::InGame;
-                }
-                MainMenuOption::Settings => {
-                    self.app_state = AppState::Settings { came_from_game: false };
-                    self.menu_manager.show_options_menu();
-                }
-                MainMenuOption::Quit => {
-                    self.quit_game = true;
-                }
-            },
-            _ => {}
-        }
-    }
-
-    fn handle_settings_action(&mut self, menu_action: MenuAction, came_from_game: bool) {
+    fn handle_settings_action(&mut self, menu_action: MenuAction) {
         match menu_action {
             MenuAction::CloseMenu => {
-                if came_from_game {
-                    self.app_state = AppState::InGame;
-                } else {
-                    self.app_state = AppState::MainMenu;
-                    self.menu_manager.show_main_menu();
-                }
+                self.app_state = AppState::InGame;
             }
             MenuAction::OptionSelected(option) => {
                 match option {
                     MenuOption::Back => {
-                        if came_from_game {
-                            self.app_state = AppState::InGame;
-                        } else {
-                            self.app_state = AppState::MainMenu;
-                            self.menu_manager.show_main_menu();
-                        }
+                        self.app_state = AppState::InGame;
                     }
                     MenuOption::Quit => {
                         self.quit_game = true;
@@ -156,17 +118,11 @@ impl GameManager {
                     }
                     MenuOption::DeveloperMode => {
                         self.debug_log.visible = !self.debug_log.visible;
-                        self.app_state = if came_from_game { AppState::InGame } else { AppState::MainMenu };
-                        if !came_from_game {
-                            self.menu_manager.show_main_menu();
-                        }
+                        self.app_state = AppState::InGame;
                     }
                     MenuOption::Help => {
                         self.menu_manager.show_startup_screen();
-                        self.app_state = if came_from_game { AppState::InGame } else { AppState::MainMenu };
-                        if !came_from_game {
-                            self.menu_manager.show_main_menu();
-                        }
+                        self.app_state = AppState::InGame;
                     }
                 }
             }
@@ -193,26 +149,10 @@ impl GameManager {
         self.game = self.game.restart();
         self.debug_log.clear();
         self.menu_manager = MenuManager::new(self.controller.keybindings());
-        self.menu_manager.hide_main_menu();
     }
 
     pub fn draw(&mut self, frame: &mut Frame) {
-        match self.app_state {
-            AppState::MainMenu => {
-                self.menu_manager.render_main_menu(frame.area(), frame.buffer_mut());
-            }
-            AppState::Settings { came_from_game } => {
-                if came_from_game {
-                    self.game.draw(frame.area(), frame.buffer_mut(), &mut self.game_renderer, &self.debug_log);
-                } else {
-                    self.menu_manager.render_main_menu(frame.area(), frame.buffer_mut());
-                }
-                self.menu_manager.render(frame.area(), frame.buffer_mut());
-            }
-            AppState::InGame => {
-                self.game.draw(frame.area(), frame.buffer_mut(), &mut self.game_renderer, &self.debug_log);
-                self.menu_manager.render(frame.area(), frame.buffer_mut());
-            }
-        }
+        self.game.draw(frame.area(), frame.buffer_mut(), &mut self.game_renderer, &self.debug_log);
+        self.menu_manager.render(frame.area(), frame.buffer_mut());
     }
 }

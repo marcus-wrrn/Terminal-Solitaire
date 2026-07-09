@@ -4,7 +4,6 @@ pub mod pile;
 pub mod selection;
 pub mod hover_state;
 pub mod klondike;
-pub mod balaterm;
 
 #[cfg(test)]
 mod tests;
@@ -15,4 +14,3 @@ pub use pile::{Pile, PileType};
 pub use selection::Selection;
 pub use hover_state::HoverState;
 pub use klondike::Board;
-pub use balaterm::CardRow;
