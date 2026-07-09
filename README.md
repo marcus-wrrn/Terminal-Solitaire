@@ -8,7 +8,7 @@ So you can game on the DNS Server.
 
 ### UI
 
-![Klondike Solitaire](assets/klondike.png)
+![Klondike Solitaire](assets/drag_and_drop.png)
 
 Provides a sleek retro design, your CLI agent will love.
 
@@ -19,9 +19,8 @@ Includes:
 - Drag and Drop functionality
 - Autoclick
 
-![Drag & Drop Solitaire](assets/drag_and_drop.png)
 
-And includes a win screen and animation
+*And includes a win screen and animation*
 
 ![Win](assets/win.png)
 
