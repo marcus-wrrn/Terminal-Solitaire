@@ -27,16 +27,10 @@ Includes:
 
 ### Installation
 
-```bash
-cargo install solitaire
-```
+Run:
+curl -sSfL https://raw.githubusercontent.com/marcus-wrrn/Terminal-Solitaire/main/install.sh | sh
 
-### Usage
-
-Simply run:
-```bash
-solitaire
-```
+in your terminal
 
 
 ### Controls
