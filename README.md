@@ -1,16 +1,28 @@
 # Solitaire Imagined
 
-A terminal-based game of Klondike Solitaire built with Rust and the [ratatui](https://ratatui.rs/) TUI framework.
+A terminal-based game of Klondike Solitaire built with Rust and the [ratatui](https://ratatui.rs/) TUI framework. 
+
+So you can game on the DNS Server.
+
+
+## UI
 
 ![Klondike Solitaire](assets/klondike.png)
 
-Includes both Mouse & Keyboard controls, Drag and Drop functionality and an autoclick function.
+
+## Features
+
+Includes:
+- Mouse & Keyboard controls 
+- Drag and Drop functionality
+- Autoclick
 
 ![Drag & Drop Solitaire](assets/drag_and_drop.png)
 
-Also includes a win screen animation.
+And includes a win screen and animation
 
 ![Win](assets/win.png)
+
 
 ## Installation
 
