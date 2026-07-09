@@ -1,10 +1,6 @@
 # Solitaire Imagined
 
-A terminal-based game of Klondike Solitaire built with Rust and the [ratatui](https://ratatui.rs/) TUI framework. 
-
-So you can game on the DNS Server.
-
-
+A terminal-based game of Klondike Solitaire built with Rust and the [ratatui](https://ratatui.rs/) TUI framework. Runs on anything, your DNS server included.
 
 ### UI
 
@@ -12,15 +8,12 @@ So you can game on the DNS Server.
 
 Provides a sleek retro design, your CLI agent will love.
 
-### Features
-
-Includes:
+**Includes:**
 - Mouse & Keyboard controls 
 - Drag and Drop functionality
 - Autoclick
 
-
-*And includes a win screen and animation*
+*comes with a free win screen animation*
 
 ![Win](assets/win.png)
 
@@ -34,7 +27,6 @@ curl -sSfL https://raw.githubusercontent.com/marcus-wrrn/Terminal-Solitaire/main
 ```
 
 Solitaire is supported on Linux, MacOS and Windows
-
 
 ### Controls
 
