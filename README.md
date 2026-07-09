@@ -12,7 +12,7 @@ So you can game on the DNS Server.
 
 Provides a sleek retro design, your CLI agent will love.
 
-## Features
+### Features
 
 Includes:
 - Mouse & Keyboard controls 
@@ -26,13 +26,13 @@ And includes a win screen and animation
 ![Win](assets/win.png)
 
 
-## Installation
+### Installation
 
 ```bash
 cargo install solitaire
 ```
 
-## Usage
+### Usage
 
 Simply run:
 ```bash
@@ -40,7 +40,7 @@ solitaire
 ```
 
 
-## Controls
+### Controls
 
 - Mouse: Click to select and move cards
 - Keyboard: Navigate with arrow keys, select with Enter/Space
