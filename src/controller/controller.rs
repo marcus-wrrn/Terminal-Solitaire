@@ -158,10 +158,8 @@ impl Controller {
             | GameAction::MoveDown => {
                 self.control_mode = ControlMode::Keyboard;
             }
-            GameAction::Cancel => {
-                if self.drag_state.is_some() {
-                    self.drag_state = None;
-                }
+            GameAction::Cancel if self.drag_state.is_some() => {
+                self.drag_state = None;
             }
             _ => {}
         }
