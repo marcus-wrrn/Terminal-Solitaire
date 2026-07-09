@@ -4,7 +4,7 @@
 #
 # Environment variables:
 #   SOLITAIRE_INSTALL_DIR  install location (default: ~/.local/bin)
-#   SOLITAIRE_VERSION      tag to install, e.g. v0.1.4 (default: latest release)
+#   SOLITAIRE_VERSION      tag to install, e.g. v0.1.5 (default: latest release)
 
 set -eu
 

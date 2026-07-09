@@ -20,13 +20,17 @@ Provides a sleek retro design, your CLI agent will love.
 
 ### Installation
 
-In your terminal or Command Line Tool run:
+Linux / MacOS (or Windows with Git Bash/WSL), run in your terminal:
 
 ```
 curl -sSfL https://raw.githubusercontent.com/marcus-wrrn/Terminal-Solitaire/main/install.sh | sh
 ```
 
-Solitaire is supported on Linux, MacOS and Windows
+Windows (PowerShell):
+
+```
+irm https://raw.githubusercontent.com/marcus-wrrn/Terminal-Solitaire/main/install.ps1 | iex
+```
 
 ### Controls
 
