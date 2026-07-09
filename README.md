@@ -5,10 +5,12 @@ A terminal-based game of Klondike Solitaire built with Rust and the [ratatui](ht
 So you can game on the DNS Server.
 
 
-## UI
+
+### UI
 
 ![Klondike Solitaire](assets/klondike.png)
 
+Provides a sleek retro design, your CLI agent will love.
 
 ## Features
 
