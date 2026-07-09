@@ -13,6 +13,7 @@ Provides a sleek retro design, your CLI agent will love.
 
 ![Klondike Solitaire](assets/drag_and_drop.png)
 
+*comes with a free win screen animation*
 
 ## Installation
 
