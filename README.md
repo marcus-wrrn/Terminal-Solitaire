@@ -8,15 +8,12 @@ A terminal-based game of Klondike Solitaire built with Rust and the [ratatui](ht
 
 Provides a sleek retro design, your CLI agent will love.
 
-### Features
-
-Includes:
+**Includes:**
 - Mouse & Keyboard controls 
 - Drag and Drop functionality
 - Autoclick
 
-
-*And includes a win screen and animation*
+*comes with a free win screen animation*
 
 ![Win](assets/win.png)
 
