@@ -1,4 +1,4 @@
-# Solitaire De-Imagined
+# Solitaire Imagined
 
 A terminal-based game of Klondike Solitaire built with Rust and the [ratatui](https://ratatui.rs/) TUI framework.
 
