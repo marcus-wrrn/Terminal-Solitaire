@@ -1,4 +1,8 @@
-use crate::{game_logic::klondike::{GameState, MoveExecutor}, game_objects::Board, ui::DebugLog};
+use crate::{
+    game_logic::klondike::{GameState, MoveExecutor},
+    game_objects::Board,
+    ui::DebugLog,
+};
 use std::time::{Duration, Instant};
 
 pub struct AnimationManager {
@@ -23,10 +27,10 @@ impl AnimationManager {
 
         if self.is_active() {
             let board = game_state.board_mut();
-            if let Err(msg) = self.win_animation(board) {
-                if msg == "No valid moves available" {
-                    debug_log.log(format!("Animation stopped: {}", msg));
-                }
+            if let Err(msg) = self.win_animation(board)
+                && msg == "No valid moves available"
+            {
+                debug_log.log(format!("Animation stopped: {}", msg));
             }
         }
     }
@@ -50,10 +54,10 @@ impl AnimationManager {
             return Err("Animation is not active");
         }
 
-        if let Some(last_time) = self.last_move_time {
-            if last_time.elapsed() < self.animation_interval {
-                return Err("Animation interval not elapsed");
-            }
+        if let Some(last_time) = self.last_move_time
+            && last_time.elapsed() < self.animation_interval
+        {
+            return Err("Animation interval not elapsed");
         }
 
         match self.try_move_next_card(board) {
@@ -72,7 +76,8 @@ impl AnimationManager {
         // Try moving from waste to any foundation
         if !board.waste.is_empty() {
             for foundation_index in 0..4 {
-                if let Ok(()) = MoveExecutor::move_waste_card_to_foundation(board, foundation_index) {
+                if let Ok(()) = MoveExecutor::move_waste_card_to_foundation(board, foundation_index)
+                {
                     return Ok(());
                 }
             }
@@ -82,7 +87,11 @@ impl AnimationManager {
         for tableau_index in 0..7 {
             if board.tableau[tableau_index].peek().is_some() {
                 for foundation_index in 0..4 {
-                    if let Ok(()) = MoveExecutor::move_card_to_foundation(board, tableau_index, foundation_index) {
+                    if let Ok(()) = MoveExecutor::move_card_to_foundation(
+                        board,
+                        tableau_index,
+                        foundation_index,
+                    ) {
                         return Ok(());
                     }
                 }

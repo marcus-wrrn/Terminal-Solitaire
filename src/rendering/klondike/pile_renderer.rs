@@ -1,4 +1,4 @@
-use crate::game_objects::{Pile, PileType, Selection, HoverState};
+use crate::game_objects::{HoverState, Pile, PileType, Selection};
 use crate::rendering::card_renderer::CardRenderer;
 use ratatui::{
     buffer::Buffer,
@@ -22,18 +22,28 @@ impl PileRenderer {
         }
     }
 
-    pub fn render(&self,
+    #[allow(clippy::too_many_arguments)]
+    pub fn render(
+        &self,
         pile: &Pile,
         pile_index: usize,
         selection: Option<&Selection>,
         picked_up: Option<&Selection>,
         hover_state: &HoverState,
         buf: &mut Buffer,
-        area: Rect
+        area: Rect,
     ) {
         let (is_hover_target, is_valid) = match hover_state {
-            HoverState::Valid(sel) if sel.pile == pile.pile_type && sel.pile_index == pile_index => (true, true),
-            HoverState::Invalid(sel) if sel.pile == pile.pile_type && sel.pile_index == pile_index => (true, false),
+            HoverState::Valid(sel)
+                if sel.pile == pile.pile_type && sel.pile_index == pile_index =>
+            {
+                (true, true)
+            }
+            HoverState::Invalid(sel)
+                if sel.pile == pile.pile_type && sel.pile_index == pile_index =>
+            {
+                (true, false)
+            }
             _ => (false, false),
         };
 
@@ -50,54 +60,94 @@ impl PileRenderer {
             for (idx, card) in pile.cards.iter().enumerate() {
                 let card_y = area.y + (idx as u16) * Self::VERTICAL_OVERLAP;
                 let is_last_card = idx == pile.cards.len() - 1;
-                let is_card_selected = is_pile_selected && selection.map(|sel| sel.card_index == idx).unwrap_or(false);
+                let is_card_selected =
+                    is_pile_selected && selection.map(|sel| sel.card_index == idx).unwrap_or(false);
                 let is_card_picked_up = picked_up
-                    .map(|sel| sel.pile == pile.pile_type && sel.pile_index == pile_index && sel.card_index == idx)
+                    .map(|sel| {
+                        sel.pile == pile.pile_type
+                            && sel.pile_index == pile_index
+                            && sel.card_index == idx
+                    })
                     .unwrap_or(false);
 
                 if is_last_card {
-                    self.card_renderer.render(card, is_card_selected, is_card_picked_up, buf, area.x, card_y);
+                    self.card_renderer.render(
+                        card,
+                        is_card_selected,
+                        is_card_picked_up,
+                        buf,
+                        area.x,
+                        card_y,
+                    );
                 } else {
-                    self.card_renderer.render_overlapped(card, is_card_selected, is_card_picked_up, buf, area.x, card_y, Self::VERTICAL_OVERLAP);
+                    self.card_renderer.render_overlapped(
+                        card,
+                        is_card_selected,
+                        is_card_picked_up,
+                        buf,
+                        area.x,
+                        card_y,
+                        Self::VERTICAL_OVERLAP,
+                    );
                 }
             }
 
             if is_hover_target && !pile.is_empty() {
-                let mut area_cp = area.clone();
+                let mut area_cp = area;
                 area_cp.y = area.y + (pile.len() as u16) * Self::VERTICAL_OVERLAP;
                 self.render_hover_highlight(buf, area_cp, is_valid);
             }
 
-            if is_pile_selected && !pile.is_empty() {
-                if let Some(sel) = selection {
-                    if sel.card_index == pile.len() {
-                        let mut area_cp = area.clone();
-                        area_cp.y = area.y + (pile.len() as u16) * Self::VERTICAL_OVERLAP;
-                        self.render_selection_highlight(buf, area_cp);
-                    }
-                }
+            if is_pile_selected
+                && !pile.is_empty()
+                && let Some(sel) = selection
+                && sel.card_index == pile.len()
+            {
+                let mut area_cp = area;
+                area_cp.y = area.y + (pile.len() as u16) * Self::VERTICAL_OVERLAP;
+                self.render_selection_highlight(buf, area_cp);
             }
         } else if let Some(card) = pile.peek() {
-            let is_card_selected = is_pile_selected && selection.map(|sel| sel.card_index == pile.len() - 1).unwrap_or(false);
+            let is_card_selected = is_pile_selected
+                && selection
+                    .map(|sel| sel.card_index == pile.len() - 1)
+                    .unwrap_or(false);
             let is_card_picked_up = picked_up
-                .map(|sel| sel.pile == pile.pile_type && sel.pile_index == pile_index && sel.card_index == pile.len() - 1)
+                .map(|sel| {
+                    sel.pile == pile.pile_type
+                        && sel.pile_index == pile_index
+                        && sel.card_index == pile.len() - 1
+                })
                 .unwrap_or(false);
-            self.card_renderer.render(card, is_card_selected, is_card_picked_up, buf, area.x, area.y);
+            self.card_renderer.render(
+                card,
+                is_card_selected,
+                is_card_picked_up,
+                buf,
+                area.x,
+                area.y,
+            );
             if is_hover_target {
                 self.render_hover_highlight(buf, area, is_valid);
             }
 
-            if is_pile_selected {
-                if let Some(sel) = selection {
-                    if sel.card_index == pile.len() {
-                        self.render_selection_highlight(buf, area);
-                    }
-                }
+            if is_pile_selected
+                && let Some(sel) = selection
+                && sel.card_index == pile.len()
+            {
+                self.render_selection_highlight(buf, area);
             }
         }
     }
 
-    fn render_empty_pile(&self, buf: &mut Buffer, area: Rect, is_selected: bool, is_hover_target: bool, is_valid: bool) {
+    fn render_empty_pile(
+        &self,
+        buf: &mut Buffer,
+        area: Rect,
+        is_selected: bool,
+        is_hover_target: bool,
+        is_valid: bool,
+    ) {
         let card_area = Rect {
             x: area.x,
             y: area.y,
@@ -105,7 +155,9 @@ impl PileRenderer {
             height: CardRenderer::HEIGHT.min(area.height),
         };
 
-        if card_area.x + card_area.width <= buf.area.width && card_area.y + card_area.height <= buf.area.height {
+        if card_area.x + card_area.width <= buf.area.width
+            && card_area.y + card_area.height <= buf.area.height
+        {
             let horizontal_count = card_area.width.saturating_sub(2) as usize;
 
             let (top_border, vertical, bottom_border, border_style) = if is_hover_target {
@@ -132,12 +184,7 @@ impl PileRenderer {
                 )
             };
 
-            buf.set_string(
-                card_area.x,
-                card_area.y,
-                &top_border,
-                border_style,
-            );
+            buf.set_string(card_area.x, card_area.y, &top_border, border_style);
 
             for row in 1..card_area.height.saturating_sub(1) {
                 buf.set_string(card_area.x, card_area.y + row, &vertical, border_style);
@@ -166,7 +213,9 @@ impl PileRenderer {
             height: CardRenderer::HEIGHT.min(area.height),
         };
 
-        if card_area.x + card_area.width > buf.area.width || card_area.y + card_area.height > buf.area.height {
+        if card_area.x + card_area.width > buf.area.width
+            || card_area.y + card_area.height > buf.area.height
+        {
             return;
         }
 
@@ -205,7 +254,9 @@ impl PileRenderer {
             height: CardRenderer::HEIGHT.min(area.height),
         };
 
-        if card_area.x + card_area.width > buf.area.width || card_area.y + card_area.height > buf.area.height {
+        if card_area.x + card_area.width > buf.area.width
+            || card_area.y + card_area.height > buf.area.height
+        {
             return;
         }
 

@@ -1,8 +1,8 @@
 use super::KeyBindings;
 use ratatui::crossterm::event::{self, Event, KeyEvent, KeyEventKind, MouseButton, MouseEventKind};
+use std::cell::RefCell;
 use std::io;
 use std::rc::Rc;
-use std::cell::RefCell;
 
 /// Represents the input mode for the controller
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
@@ -109,7 +109,6 @@ pub struct Controller {
 
 impl Controller {
     pub fn new() -> Self {
-
         Self {
             key_bindings: Rc::new(RefCell::new(KeyBindings::default())),
             drag_state: None,
@@ -137,7 +136,7 @@ impl Controller {
                 Event::Key(key) => {
                     if key.kind == KeyEventKind::Press {
                         let action = self.map_key_to_action(key);
-                        self.handle_key_action(action.clone());
+                        self.handle_key_action(action);
                         return Ok(Some(action));
                     }
                 }
@@ -153,8 +152,10 @@ impl Controller {
 
     fn handle_key_action(&mut self, action: GameAction) {
         match action {
-            GameAction::MoveLeft | GameAction::MoveRight |
-            GameAction::MoveUp | GameAction::MoveDown => {
+            GameAction::MoveLeft
+            | GameAction::MoveRight
+            | GameAction::MoveUp
+            | GameAction::MoveDown => {
                 self.control_mode = ControlMode::Keyboard;
             }
             GameAction::Cancel => {

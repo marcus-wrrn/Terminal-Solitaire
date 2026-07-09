@@ -1,4 +1,4 @@
-use crate::game_objects::{Board, Selection, HoverState};
+use crate::game_objects::{Board, HoverState, Selection};
 use crate::ui::DebugLog;
 
 /// Contains information on how to best render the board
@@ -15,7 +15,7 @@ impl<'a> RenderingInstructions<'a> {
         selection: Option<&'a Selection>,
         picked_up: Option<&'a Selection>,
         hover_state: &'a HoverState,
-        debug_log: &'a DebugLog
+        debug_log: &'a DebugLog,
     ) -> Self {
         Self {
             title,
@@ -23,9 +23,9 @@ impl<'a> RenderingInstructions<'a> {
                 board,
                 selection,
                 picked_up,
-                hover_state
+                hover_state,
             },
-            debug_log
+            debug_log,
         }
     }
 }
@@ -34,6 +34,5 @@ pub struct BoardRenderingIntr<'a> {
     pub board: &'a Board,
     pub selection: Option<&'a Selection>,
     pub picked_up: Option<&'a Selection>,
-    pub hover_state: &'a HoverState
+    pub hover_state: &'a HoverState,
 }
-

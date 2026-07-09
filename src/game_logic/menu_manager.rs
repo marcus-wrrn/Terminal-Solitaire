@@ -1,8 +1,11 @@
-use crate::ui::{OptionsMenu, MenuOption, popups::{VictoryPop, StartupPop}};
 use crate::controller::{GameAction, KeyBindings};
+use crate::ui::{
+    MenuOption, OptionsMenu,
+    popups::{StartupPop, VictoryPop},
+};
 use ratatui::{buffer::Buffer, layout::Rect};
-use std::rc::Rc;
 use std::cell::RefCell;
+use std::rc::Rc;
 
 pub struct MenuManager {
     options_menu: OptionsMenu,
@@ -16,7 +19,6 @@ pub enum MenuAction {
     Navigate,
     OptionSelected(MenuOption),
 }
-
 
 impl MenuManager {
     pub fn new(key_bindings: Rc<RefCell<KeyBindings>>) -> Self {
@@ -54,7 +56,7 @@ impl MenuManager {
             return None;
         }
 
-        let menu_action = match action {
+        match action {
             GameAction::Quit | GameAction::Cancel | GameAction::OptionsMenu => {
                 self.options_menu.hide();
                 Some(MenuAction::CloseMenu)
@@ -73,9 +75,7 @@ impl MenuManager {
                 Some(MenuAction::OptionSelected(selected))
             }
             _ => None,
-        };
-
-        return menu_action;
+        }
     }
 
     pub fn show_victory_screen(&mut self) {

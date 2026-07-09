@@ -1,7 +1,7 @@
 use crate::controller::GameAction;
+use crate::game_logic::MenuManager;
 use crate::game_logic::game_handler::{AppTransition, GameHandler};
 use crate::game_logic::klondike::{AnimationManager, GameState, SelectionManager};
-use crate::game_logic::MenuManager;
 use crate::game_objects::{HoverState, PileType, Selection};
 use crate::rendering::{GameRenderer, RenderingInstructions};
 use crate::ui::DebugLog;
@@ -32,21 +32,23 @@ impl KlondikeGame {
             return valid_moves;
         };
 
-        if let Some(pile) = board.get_pile(selection.pile, selection.pile_index) && selection.card_index == pile.len() - 1 {
+        if let Some(pile) = board.get_pile(selection.pile, selection.pile_index)
+            && selection.card_index == pile.len() - 1
+        {
             for i in 0..4 {
-                if let Some(pile) = board.get_foundation_pile(i) {
-                    if pile.can_place_card(card) {
-                        valid_moves.push(Selection::new(PileType::Foundation, i, pile.len()));
-                    }
+                if let Some(pile) = board.get_foundation_pile(i)
+                    && pile.can_place_card(card)
+                {
+                    valid_moves.push(Selection::new(PileType::Foundation, i, pile.len()));
                 }
             }
         }
 
         for i in 0..7 {
-            if let Some(pile) = board.get_tableau_pile(i) {
-                if pile.can_place_card(card) {
-                    valid_moves.push(Selection::new(PileType::Tableau, i, pile.len()));
-                }
+            if let Some(pile) = board.get_tableau_pile(i)
+                && pile.can_place_card(card)
+            {
+                valid_moves.push(Selection::new(PileType::Tableau, i, pile.len()));
             }
         }
 
@@ -58,7 +60,7 @@ impl KlondikeGame {
             let source = self.selection_manager.picked_up().unwrap();
             let target = self.selection_manager.selection();
             if let Err(msg) = self.game_state.place_cards(source, target) {
-                debug_log.log(format!("{}", msg));
+                debug_log.log(msg.to_string());
                 self.selection_manager.cancel_pickup();
             } else {
                 self.selection_manager.place();
@@ -66,7 +68,7 @@ impl KlondikeGame {
         } else {
             let selection = self.selection_manager.selection();
             if let Err(msg) = self.game_state.pick_up_cards(selection) {
-                debug_log.log(format!("{}", msg));
+                debug_log.log(msg.to_string());
             } else {
                 self.selection_manager.pick_up();
                 let valid_moves = Self::compute_valid_moves(&self.game_state, &selection);
@@ -90,14 +92,14 @@ impl KlondikeGame {
 
         if let Some(first_move) = moves.first() {
             if let Err(msg) = self.game_state.pick_up_cards(selection) {
-                debug_log.log(format!("{}", msg));
+                debug_log.log(msg.to_string());
             } else {
                 self.selection_manager.pick_up();
                 self.selection_manager.set_selection(*first_move);
                 let source = self.selection_manager.picked_up().unwrap();
                 let target = self.selection_manager.selection();
                 if let Err(msg) = self.game_state.place_cards(source, target) {
-                    debug_log.log(format!("{}", msg));
+                    debug_log.log(msg.to_string());
                     self.selection_manager.cancel_pickup();
                 } else {
                     self.selection_manager.place();
@@ -109,28 +111,50 @@ impl KlondikeGame {
 }
 
 impl GameHandler for KlondikeGame {
-    fn handle_action(&mut self, action: GameAction, debug_log: &mut DebugLog) -> Option<AppTransition> {
+    fn handle_action(
+        &mut self,
+        action: GameAction,
+        debug_log: &mut DebugLog,
+    ) -> Option<AppTransition> {
         match action {
             GameAction::Quit => return Some(AppTransition::Quit),
             GameAction::MoveLeft => {
-                let valid_moves = self.selection_manager.picked_up().map(|pu| Self::compute_valid_moves(&self.game_state, &pu));
-                self.selection_manager.move_left(self.game_state.board(), valid_moves.as_ref());
+                let valid_moves = self
+                    .selection_manager
+                    .picked_up()
+                    .map(|pu| Self::compute_valid_moves(&self.game_state, &pu));
+                self.selection_manager
+                    .move_left(self.game_state.board(), valid_moves.as_ref());
             }
             GameAction::MoveRight => {
-                let valid_moves = self.selection_manager.picked_up().map(|pu| Self::compute_valid_moves(&self.game_state, &pu));
-                self.selection_manager.move_right(self.game_state.board(), valid_moves.as_ref());
+                let valid_moves = self
+                    .selection_manager
+                    .picked_up()
+                    .map(|pu| Self::compute_valid_moves(&self.game_state, &pu));
+                self.selection_manager
+                    .move_right(self.game_state.board(), valid_moves.as_ref());
             }
             GameAction::MoveUp => {
-                let valid_moves = self.selection_manager.picked_up().map(|pu| Self::compute_valid_moves(&self.game_state, &pu));
-                self.selection_manager.move_up(self.game_state.board(), valid_moves.as_ref());
+                let valid_moves = self
+                    .selection_manager
+                    .picked_up()
+                    .map(|pu| Self::compute_valid_moves(&self.game_state, &pu));
+                self.selection_manager
+                    .move_up(self.game_state.board(), valid_moves.as_ref());
             }
             GameAction::MoveDown => {
-                let valid_moves = self.selection_manager.picked_up().map(|pu| Self::compute_valid_moves(&self.game_state, &pu));
-                self.selection_manager.move_down(self.game_state.board(), valid_moves.as_ref());
+                let valid_moves = self
+                    .selection_manager
+                    .picked_up()
+                    .map(|pu| Self::compute_valid_moves(&self.game_state, &pu));
+                self.selection_manager
+                    .move_down(self.game_state.board(), valid_moves.as_ref());
             }
             GameAction::Select | GameAction::Enter => self.handle_select(debug_log),
             GameAction::Cancel => self.selection_manager.cancel_pickup(),
-            GameAction::DrawStock => { let _ = self.game_state.draw_from_stock(); }
+            GameAction::DrawStock => {
+                let _ = self.game_state.draw_from_stock();
+            }
             GameAction::Undo => {}
             GameAction::Restart => return Some(AppTransition::Restart),
             GameAction::OptionsMenu => return Some(AppTransition::OpenSettings),
@@ -145,19 +169,28 @@ impl GameHandler for KlondikeGame {
         None
     }
 
-    fn handle_mouse_action(&mut self, action: GameAction, renderer: &GameRenderer, debug_log: &mut DebugLog) {
+    fn handle_mouse_action(
+        &mut self,
+        action: GameAction,
+        renderer: &GameRenderer,
+        debug_log: &mut DebugLog,
+    ) {
         match action {
             GameAction::LeftMousePress(x, y) => {
-                if let Some(selection) = renderer.coordinate_to_selection(self.game_state.board(), x, y) {
+                if let Some(selection) =
+                    renderer.coordinate_to_selection(self.game_state.board(), x, y)
+                {
                     self.selection_manager.set_selection(selection);
                     self.selection_manager.set_visible(true);
                 }
             }
             GameAction::StartDrag(x, y) => {
-                if let Some(selection) = renderer.coordinate_to_selection(self.game_state.board(), x, y) {
+                if let Some(selection) =
+                    renderer.coordinate_to_selection(self.game_state.board(), x, y)
+                {
                     self.selection_manager.set_selection(selection);
                     if let Err(msg) = self.game_state.pick_up_cards(selection) {
-                        debug_log.log(format!("{}", msg));
+                        debug_log.log(msg.to_string());
                     } else {
                         self.selection_manager.pick_up();
                     }
@@ -165,7 +198,9 @@ impl GameHandler for KlondikeGame {
             }
             GameAction::UpdateDrag(x, y) => {
                 if self.selection_manager.has_picked_up() {
-                    if let Some(target) = renderer.coordinate_to_selection(self.game_state.board(), x, y) {
+                    if let Some(target) =
+                        renderer.coordinate_to_selection(self.game_state.board(), x, y)
+                    {
                         let Some(source) = self.selection_manager.picked_up() else {
                             debug_log.log("Error: selection not found for dragging");
                             return;
@@ -182,22 +217,23 @@ impl GameHandler for KlondikeGame {
                 }
             }
             GameAction::CompleteDrag(x, y) => {
-                if let Some(target) = renderer.coordinate_to_selection(self.game_state.board(), x, y) {
-                    if self.selection_manager.has_picked_up() {
-                        self.selection_manager.set_selection(target);
-                        let Some(source) = self.selection_manager.picked_up() else {
-                            debug_log.log("Could not find picked up card for drag");
-                            self.hover_state = HoverState::None;
-                            return;
-                        };
-                        if let Err(val) = self.game_state.place_cards(source, target) {
-                            debug_log.log(format!("{}", val));
-                            self.selection_manager.cancel_pickup();
-                        } else {
-                            self.selection_manager.place();
-                        }
-                        self.selection_manager.set_visible(false);
+                if let Some(target) =
+                    renderer.coordinate_to_selection(self.game_state.board(), x, y)
+                    && self.selection_manager.has_picked_up()
+                {
+                    self.selection_manager.set_selection(target);
+                    let Some(source) = self.selection_manager.picked_up() else {
+                        debug_log.log("Could not find picked up card for drag");
+                        self.hover_state = HoverState::None;
+                        return;
+                    };
+                    if let Err(val) = self.game_state.place_cards(source, target) {
+                        debug_log.log(val.to_string());
+                        self.selection_manager.cancel_pickup();
+                    } else {
+                        self.selection_manager.place();
                     }
+                    self.selection_manager.set_visible(false);
                 }
 
                 if self.selection_manager.has_picked_up() {
@@ -210,13 +246,20 @@ impl GameHandler for KlondikeGame {
     }
 
     fn update(&mut self, menu_manager: &mut MenuManager, debug_log: &mut DebugLog) {
-        self.animation_manager.process_game_state(&mut self.game_state, debug_log);
+        self.animation_manager
+            .process_game_state(&mut self.game_state, debug_log);
         if self.game_state.has_won() {
             menu_manager.show_victory_screen();
         }
     }
 
-    fn draw(&self, area: Rect, buf: &mut Buffer, renderer: &mut GameRenderer, debug_log: &DebugLog) {
+    fn draw(
+        &self,
+        area: Rect,
+        buf: &mut Buffer,
+        renderer: &mut GameRenderer,
+        debug_log: &DebugLog,
+    ) {
         let selection = self.selection_manager.selection_if_visible();
         let picked_up = self.selection_manager.picked_up();
         let rendering_instr = RenderingInstructions::new(

@@ -1,13 +1,13 @@
+use crate::resources::FIGLET_3D_FONT;
+use crate::ui::figlet::FIGfont;
 use ratatui::{
     buffer::Buffer,
     layout::{Constraint, Flex, Layout, Rect},
     style::{Color, Style},
     text::{Line, Span},
-    widgets::{Block, Borders, Clear, Paragraph, Widget, BorderType},
+    widgets::{Block, BorderType, Borders, Clear, Paragraph, Widget},
 };
 use unicode_width::UnicodeWidthStr;
-use crate::ui::figlet::FIGfont;
-use crate::resources::FIGLET_3D_FONT;
 
 pub struct VictoryPop {
     is_visible: bool,
@@ -15,9 +15,7 @@ pub struct VictoryPop {
 
 impl VictoryPop {
     pub fn new() -> Self {
-        Self {
-            is_visible: false,
-        }
+        Self { is_visible: false }
     }
 
     pub fn show(&mut self) {
@@ -44,10 +42,16 @@ impl VictoryPop {
         let congrats_text = congratulations.to_string();
         let win_text = you_won.to_string();
 
-        let congrats_width = congrats_text.lines().map(|l| l.trim_end().width()).max().unwrap_or(0) as u16;
+        let congrats_width = congrats_text
+            .lines()
+            .map(|l| l.trim_end().width())
+            .max()
+            .unwrap_or(0) as u16;
 
         let test_popup_area = Self::centered_rect(90, 10, area);
-        let test_block = Block::default().borders(Borders::ALL).border_type(BorderType::Thick);
+        let test_block = Block::default()
+            .borders(Borders::ALL)
+            .border_type(BorderType::Thick);
         let available_width = test_block.inner(test_popup_area).width;
 
         let mut victory_text: Vec<Line> = Vec::new();
@@ -56,8 +60,7 @@ impl VictoryPop {
             for line in congrats_text.lines() {
                 victory_text.push(Line::from(Span::styled(
                     line,
-                    Style::default()
-                        .fg(Color::Yellow)
+                    Style::default().fg(Color::Yellow),
                 )));
             }
 
@@ -67,8 +70,7 @@ impl VictoryPop {
         for line in win_text.lines() {
             victory_text.push(Line::from(Span::styled(
                 line,
-                Style::default()
-                    .fg(Color::Yellow)
+                Style::default().fg(Color::Yellow),
             )));
         }
 
@@ -80,14 +82,17 @@ impl VictoryPop {
 
         Clear.render(popup_area, buf);
 
-        let victory_paragraph = Paragraph::new(victory_text)
-            .centered();
+        let victory_paragraph = Paragraph::new(victory_text).centered();
 
         let block = Block::default()
             .borders(Borders::ALL)
             .border_type(BorderType::Thick)
             .title_bottom(Line::from(" Press R to restart ").left_aligned())
-            .title_bottom(Line::from(" Press Q to quit ").right_aligned().style(Style::default().fg(Color::Red)))
+            .title_bottom(
+                Line::from(" Press Q to quit ")
+                    .right_aligned()
+                    .style(Style::default().fg(Color::Red)),
+            )
             .style(Style::default().fg(Color::LightYellow));
 
         let inner_area = block.inner(popup_area);

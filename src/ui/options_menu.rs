@@ -61,7 +61,7 @@ impl OptionsMenu {
         self.is_visible = false;
     }
 
-pub fn is_visible(&self) -> bool {
+    pub fn is_visible(&self) -> bool {
         self.is_visible
     }
 
@@ -105,23 +105,19 @@ pub fn is_visible(&self) -> bool {
                 };
 
                 let prefix = if i == self.selected_index { "> " } else { "  " };
-                let line = Line::from(vec![
-                    Span::raw(prefix),
-                    Span::styled(option.label(), style),
-                ]);
+                let line = Line::from(vec![Span::raw(prefix), Span::styled(option.label(), style)]);
 
                 ListItem::new(line)
             })
             .collect();
 
-        let list = List::new(items)
-            .block(
-                Block::default()
-                    .borders(Borders::ALL)
-                    .title("Options Menu")
-                    .padding(Padding::uniform(2))
-                    .style(Style::default().fg(Color::Cyan))
-            );
+        let list = List::new(items).block(
+            Block::default()
+                .borders(Borders::ALL)
+                .title("Options Menu")
+                .padding(Padding::uniform(2))
+                .style(Style::default().fg(Color::Cyan)),
+        );
 
         list.render(popup_area, buf);
     }

@@ -1,7 +1,7 @@
-use crate::game_objects::{Board, Pile, PileType, Selection, HoverState};
-use crate::rendering::klondike::render_instructions::BoardRenderingIntr;
+use crate::game_objects::{Board, HoverState, Pile, PileType, Selection};
 use crate::rendering::card_renderer::CardRenderer;
 use crate::rendering::klondike::pile_renderer::PileRenderer;
+use crate::rendering::klondike::render_instructions::BoardRenderingIntr;
 use ratatui::{
     buffer::Buffer,
     layout::{Constraint, Flex, Layout, Rect},
@@ -33,39 +33,59 @@ impl BoardRenderer {
     }
 
     /// Renders the complete board with hover highlighting
-    pub fn render(
-        &mut self, 
-        instr: &BoardRenderingIntr,
-        buf: &mut Buffer, 
-        area: Rect
-    ) {
+    pub fn render(&mut self, instr: &BoardRenderingIntr, buf: &mut Buffer, area: Rect) {
         self.pile_bounds.clear();
         let vertical_sections = Layout::vertical([
-            Constraint::Length(CardRenderer::HEIGHT + 1),   // Stock/Waste/Foundation + labels
-            Constraint::Length(2),                          // Spacing
-            Constraint::Min(CardRenderer::HEIGHT + 1),      // Tableau (grows as needed)
+            Constraint::Length(CardRenderer::HEIGHT + 1), // Stock/Waste/Foundation + labels
+            Constraint::Length(2),                        // Spacing
+            Constraint::Min(CardRenderer::HEIGHT + 1),    // Tableau (grows as needed)
         ])
         .flex(Flex::Center)
         .split(area);
 
         let top_row_sections = Layout::horizontal([
-            Constraint::Length(CardRenderer::WIDTH),   // Stock
-            Constraint::Length(CardRenderer::WIDTH),   // Waste
-            Constraint::Length(9),                     // Gap
-            Constraint::Length(CardRenderer::WIDTH),   // Foundation 1
-            Constraint::Length(CardRenderer::WIDTH),   // Foundation 2
-            Constraint::Length(CardRenderer::WIDTH),   // Foundation 3
-            Constraint::Length(CardRenderer::WIDTH),   // Foundation 4
+            Constraint::Length(CardRenderer::WIDTH), // Stock
+            Constraint::Length(CardRenderer::WIDTH), // Waste
+            Constraint::Length(9),                   // Gap
+            Constraint::Length(CardRenderer::WIDTH), // Foundation 1
+            Constraint::Length(CardRenderer::WIDTH), // Foundation 2
+            Constraint::Length(CardRenderer::WIDTH), // Foundation 3
+            Constraint::Length(CardRenderer::WIDTH), // Foundation 4
         ])
         .spacing(Self::HORIZONTAL_SPACING)
         .flex(Flex::Center)
         .split(vertical_sections[0]);
 
         //self.render_stock_and_waste(board, selection, hover_state, buf, top_row_sections[0], top_row_sections[1]);
-        self.render_pile(Some("Stock"), &instr.board.stock, 0, instr.selection, instr.picked_up, instr.hover_state, top_row_sections[0], buf);
-        self.render_pile(Some("Waste"), &instr.board.waste, 0, instr.selection, instr.picked_up, instr.hover_state, top_row_sections[1], buf);
+        self.render_pile(
+            Some("Stock"),
+            &instr.board.stock,
+            0,
+            instr.selection,
+            instr.picked_up,
+            instr.hover_state,
+            top_row_sections[0],
+            buf,
+        );
+        self.render_pile(
+            Some("Waste"),
+            &instr.board.waste,
+            0,
+            instr.selection,
+            instr.picked_up,
+            instr.hover_state,
+            top_row_sections[1],
+            buf,
+        );
 
-        self.render_foundations(instr.board, instr.selection, instr.picked_up, instr.hover_state, buf, &top_row_sections[3..7]);
+        self.render_foundations(
+            instr.board,
+            instr.selection,
+            instr.picked_up,
+            instr.hover_state,
+            buf,
+            &top_row_sections[3..7],
+        );
 
         let tableau_sections = Layout::horizontal([
             Constraint::Length(CardRenderer::WIDTH),
@@ -80,18 +100,59 @@ impl BoardRenderer {
         .flex(Flex::Center)
         .split(vertical_sections[2]);
 
-        self.render_tableau(instr.board, instr.selection, instr.picked_up, instr.hover_state, buf, &tableau_sections);
+        self.render_tableau(
+            instr.board,
+            instr.selection,
+            instr.picked_up,
+            instr.hover_state,
+            buf,
+            &tableau_sections,
+        );
     }
 
-    fn render_foundations(&mut self, board: &Board, selection: Option<&Selection>, picked_up: Option<&Selection>, hover_state: &HoverState, buf: &mut Buffer, foundation_areas: &[Rect]) {
+    fn render_foundations(
+        &mut self,
+        board: &Board,
+        selection: Option<&Selection>,
+        picked_up: Option<&Selection>,
+        hover_state: &HoverState,
+        buf: &mut Buffer,
+        foundation_areas: &[Rect],
+    ) {
         for (i, (pile, area)) in board.foundation.iter().zip(foundation_areas).enumerate() {
-            self.render_pile(Some(&format!("F{}", i + 1)), pile, i, selection, picked_up, hover_state, *area, buf);
+            self.render_pile(
+                Some(&format!("F{}", i + 1)),
+                pile,
+                i,
+                selection,
+                picked_up,
+                hover_state,
+                *area,
+                buf,
+            );
         }
     }
 
-    fn render_tableau(&mut self, board: &Board, selection: Option<&Selection>, picked_up: Option<&Selection>, hover_state: &HoverState, buf: &mut Buffer, tableau_areas: &[Rect]) {
+    fn render_tableau(
+        &mut self,
+        board: &Board,
+        selection: Option<&Selection>,
+        picked_up: Option<&Selection>,
+        hover_state: &HoverState,
+        buf: &mut Buffer,
+        tableau_areas: &[Rect],
+    ) {
         for (i, (pile, area)) in board.tableau.iter().zip(tableau_areas).enumerate() {
-            self.render_pile(Some(&format!("T{}", i)), pile, i, selection, picked_up, hover_state, *area, buf);
+            self.render_pile(
+                Some(&format!("T{}", i)),
+                pile,
+                i,
+                selection,
+                picked_up,
+                hover_state,
+                *area,
+                buf,
+            );
         }
     }
 
@@ -99,7 +160,9 @@ impl BoardRenderer {
         buf.set_string(area.x, area.y, label, Style::default().fg(Color::Gray));
     }
 
-    fn render_pile(&mut self,
+    #[allow(clippy::too_many_arguments)]
+    fn render_pile(
+        &mut self,
         label: Option<&str>,
         pile: &Pile,
         index: usize,
@@ -107,18 +170,30 @@ impl BoardRenderer {
         picked_up: Option<&Selection>,
         hover_state: &HoverState,
         area: Rect,
-        buf: &mut Buffer
+        buf: &mut Buffer,
     ) {
         if let Some(lab) = label {
             self.render_pile_label(buf, area, lab);
         }
-        let pile_area = Rect { x: area.x, y: area.y + 1, ..area };
+        let pile_area = Rect {
+            x: area.x,
+            y: area.y + 1,
+            ..area
+        };
         self.pile_bounds.push(PileBounds {
             pile_type: pile.pile_type,
             pile_index: index,
             rect: pile_area,
         });
-        self.pile_renderer.render(pile, index, selection, picked_up, hover_state, buf, pile_area);
+        self.pile_renderer.render(
+            pile,
+            index,
+            selection,
+            picked_up,
+            hover_state,
+            buf,
+            pile_area,
+        );
     }
 
     /// Converts screen coordinates to a Selection, if a pile is at that position
@@ -136,7 +211,8 @@ impl BoardRenderer {
                                 0
                             } else {
                                 let offset_y = y.saturating_sub(bounds.rect.y);
-                                let estimated_index = (offset_y / PileRenderer::VERTICAL_OVERLAP) as usize;
+                                let estimated_index =
+                                    (offset_y / PileRenderer::VERTICAL_OVERLAP) as usize;
                                 estimated_index.min(pile.len() - 1)
                             }
                         } else {

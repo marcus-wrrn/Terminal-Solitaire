@@ -18,7 +18,15 @@ impl CardRenderer {
     }
 
     /// Renders a complete card at the specified position
-    pub fn render(&self, card: &Card, is_selected: bool, is_picked_up: bool, buf: &mut Buffer, x: u16, y: u16) {
+    pub fn render(
+        &self,
+        card: &Card,
+        is_selected: bool,
+        is_picked_up: bool,
+        buf: &mut Buffer,
+        x: u16,
+        y: u16,
+    ) {
         let card_area = Rect {
             x,
             y,
@@ -41,7 +49,17 @@ impl CardRenderer {
 
     /// Renders a card that is overlapped by another card (shows only partial top)
     /// Used for tableau piles where cards overlap vertically
-    pub fn render_overlapped(&self, card: &Card, is_selected: bool, is_picked_up: bool, buf: &mut Buffer, x: u16, y: u16, overlap: u16) {
+    #[allow(clippy::too_many_arguments)]
+    pub fn render_overlapped(
+        &self,
+        card: &Card,
+        is_selected: bool,
+        is_picked_up: bool,
+        buf: &mut Buffer,
+        x: u16,
+        y: u16,
+        overlap: u16,
+    ) {
         let visible_height = overlap;
 
         if visible_height < 2 {
@@ -161,7 +179,11 @@ impl CardRenderer {
     }
 
     /// Returns border characters and style based on selection state
-    fn get_border_chars(is_selected: bool, is_picked_up: bool, width: u16) -> ((String, String, String), Style) {
+    fn get_border_chars(
+        is_selected: bool,
+        is_picked_up: bool,
+        width: u16,
+    ) -> ((String, String, String), Style) {
         let horizontal_count = width.saturating_sub(2) as usize;
 
         let (chars, color) = if is_picked_up {
@@ -171,7 +193,7 @@ impl CardRenderer {
                     "║".to_string(),
                     format!("╚{}╝", "═".repeat(horizontal_count)),
                 ),
-                Color::Green
+                Color::Green,
             )
         } else if is_selected {
             (
@@ -180,7 +202,7 @@ impl CardRenderer {
                     "║".to_string(),
                     format!("╚{}╝", "═".repeat(horizontal_count)),
                 ),
-                Color::Yellow
+                Color::Yellow,
             )
         } else {
             (
@@ -189,7 +211,7 @@ impl CardRenderer {
                     "│".to_string(),
                     format!("└{}┘", "─".repeat(horizontal_count)),
                 ),
-                Color::White
+                Color::White,
             )
         };
 

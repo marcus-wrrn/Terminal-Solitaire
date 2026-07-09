@@ -57,18 +57,23 @@ impl SelectionManager {
     // Navigation methods for keyboard control
 
     pub fn move_left(&mut self, board: &Board, valid_moves: Option<&Vec<Selection>>) {
-        if let Some(moves) = valid_moves {
-            if !moves.is_empty() {
-                self.cycle_to_previous_valid_move(moves);
-                return;
-            }
+        if let Some(moves) = valid_moves
+            && !moves.is_empty()
+        {
+            self.cycle_to_previous_valid_move(moves);
+            return;
         }
 
         self.selection = match self.selection.pile {
             PileType::Tableau => {
                 if self.selection.pile_index > 0 {
                     let next_pile_index = self.selection.pile_index - 1;
-                    let card_index = Self::get_face_up_card_at_index(board, PileType::Tableau, next_pile_index, self.selection.card_index);
+                    let card_index = Self::get_face_up_card_at_index(
+                        board,
+                        PileType::Tableau,
+                        next_pile_index,
+                        self.selection.card_index,
+                    );
                     Selection::new(PileType::Tableau, next_pile_index, card_index)
                 } else {
                     self.selection
@@ -77,10 +82,15 @@ impl SelectionManager {
             PileType::Foundation => {
                 if self.selection.pile_index > 0 {
                     let next_pile_index = self.selection.pile_index - 1;
-                    let card_index = Self::get_topmost_face_up_card_index(board, PileType::Foundation, next_pile_index);
+                    let card_index = Self::get_topmost_face_up_card_index(
+                        board,
+                        PileType::Foundation,
+                        next_pile_index,
+                    );
                     Selection::new(PileType::Foundation, next_pile_index, card_index)
                 } else {
-                    let card_index = Self::get_topmost_face_up_card_index(board, PileType::Waste, 0);
+                    let card_index =
+                        Self::get_topmost_face_up_card_index(board, PileType::Waste, 0);
                     Selection::new(PileType::Waste, 0, card_index)
                 }
             }
@@ -93,18 +103,23 @@ impl SelectionManager {
     }
 
     pub fn move_right(&mut self, board: &Board, valid_moves: Option<&Vec<Selection>>) {
-        if let Some(moves) = valid_moves {
-            if !moves.is_empty() {
-                self.cycle_to_next_valid_move(moves);
-                return;
-            }
+        if let Some(moves) = valid_moves
+            && !moves.is_empty()
+        {
+            self.cycle_to_next_valid_move(moves);
+            return;
         }
 
         self.selection = match self.selection.pile {
             PileType::Tableau => {
                 if self.selection.pile_index < 6 {
                     let next_pile_index = self.selection.pile_index + 1;
-                    let card_index = Self::get_face_up_card_at_index(board, PileType::Tableau, next_pile_index, self.selection.card_index);
+                    let card_index = Self::get_face_up_card_at_index(
+                        board,
+                        PileType::Tableau,
+                        next_pile_index,
+                        self.selection.card_index,
+                    );
                     Selection::new(PileType::Tableau, next_pile_index, card_index)
                 } else {
                     self.selection
@@ -112,8 +127,16 @@ impl SelectionManager {
             }
             PileType::Foundation => {
                 if self.selection.pile_index < 3 {
-                    let card_index = Self::get_topmost_face_up_card_index(board, PileType::Foundation, self.selection.pile_index + 1);
-                    Selection::new(PileType::Foundation, self.selection.pile_index + 1, card_index)
+                    let card_index = Self::get_topmost_face_up_card_index(
+                        board,
+                        PileType::Foundation,
+                        self.selection.pile_index + 1,
+                    );
+                    Selection::new(
+                        PileType::Foundation,
+                        self.selection.pile_index + 1,
+                        card_index,
+                    )
                 } else {
                     self.selection
                 }
@@ -123,7 +146,8 @@ impl SelectionManager {
                 Selection::new(PileType::Waste, 0, card_index)
             }
             PileType::Waste => {
-                let card_index = Self::get_topmost_face_up_card_index(board, PileType::Foundation, 0);
+                let card_index =
+                    Self::get_topmost_face_up_card_index(board, PileType::Foundation, 0);
                 Selection::new(PileType::Foundation, 0, card_index)
             }
         };
@@ -141,18 +165,20 @@ impl SelectionManager {
     }
 
     pub fn move_up(&mut self, board: &Board, valid_moves: Option<&Vec<Selection>>) {
-        if let Some(moves) = valid_moves {
-            if !moves.is_empty() {
-                self.cycle_to_previous_valid_move(moves);
-                return;
-            }
+        if let Some(moves) = valid_moves
+            && !moves.is_empty()
+        {
+            self.cycle_to_previous_valid_move(moves);
+            return;
         }
 
         self.selection = match self.selection.pile {
             PileType::Tableau => {
-                if self.selection.card_index > 0 && let Some(pile) = board.get_tableau_pile(self.selection.pile_index) {
+                if self.selection.card_index > 0
+                    && let Some(pile) = board.get_tableau_pile(self.selection.pile_index)
+                {
                     let target_index = self.selection.card_index - 1;
-                    if pile.cards.get(target_index).map_or(false, |c| c.face_up) {
+                    if pile.cards.get(target_index).is_some_and(|c| c.face_up) {
                         Selection::new(PileType::Tableau, self.selection.pile_index, target_index)
                     } else {
                         Self::move_to_upward_piles(board, self.selection.pile_index)
@@ -168,11 +194,11 @@ impl SelectionManager {
     }
 
     pub fn move_down(&mut self, board: &Board, valid_moves: Option<&Vec<Selection>>) {
-        if let Some(moves) = valid_moves {
-            if !moves.is_empty() {
-                self.cycle_to_next_valid_move(moves);
-                return;
-            }
+        if let Some(moves) = valid_moves
+            && !moves.is_empty()
+        {
+            self.cycle_to_next_valid_move(moves);
+            return;
         }
 
         self.selection = match self.selection.pile {
@@ -181,8 +207,12 @@ impl SelectionManager {
                     let pile_len = pile.len();
                     if pile_len > 0 && self.selection.card_index < pile_len - 1 {
                         let target_index = self.selection.card_index + 1;
-                        if pile.cards.get(target_index).map_or(false, |c| c.face_up) {
-                            Selection::new(PileType::Tableau, self.selection.pile_index, target_index)
+                        if pile.cards.get(target_index).is_some_and(|c| c.face_up) {
+                            Selection::new(
+                                PileType::Tableau,
+                                self.selection.pile_index,
+                                target_index,
+                            )
                         } else {
                             self.selection
                         }
@@ -199,7 +229,8 @@ impl SelectionManager {
                 } else {
                     6
                 };
-                let card_index = Self::get_topmost_face_up_card_index(board, PileType::Tableau, tableau_index);
+                let card_index =
+                    Self::get_topmost_face_up_card_index(board, PileType::Tableau, tableau_index);
                 Selection::new(PileType::Tableau, tableau_index, card_index)
             }
             PileType::Stock => {
@@ -213,7 +244,7 @@ impl SelectionManager {
         };
     }
 
-    fn cycle_to_next_valid_move(&mut self, valid_moves: &Vec<Selection>) {
+    fn cycle_to_next_valid_move(&mut self, valid_moves: &[Selection]) {
         if let Some(current_index) = valid_moves.iter().position(|&s| s == self.selection) {
             let next_index = (current_index + 1) % valid_moves.len();
             self.selection = valid_moves[next_index];
@@ -222,7 +253,7 @@ impl SelectionManager {
         }
     }
 
-    fn cycle_to_previous_valid_move(&mut self, valid_moves: &Vec<Selection>) {
+    fn cycle_to_previous_valid_move(&mut self, valid_moves: &[Selection]) {
         if let Some(current_index) = valid_moves.iter().position(|&s| s == self.selection) {
             let prev_index = if current_index == 0 {
                 valid_moves.len() - 1
@@ -235,24 +266,27 @@ impl SelectionManager {
         }
     }
 
-    fn get_topmost_face_up_card_index(board: &Board, pile_type: PileType, pile_index: usize) -> usize {
+    fn get_topmost_face_up_card_index(
+        board: &Board,
+        pile_type: PileType,
+        pile_index: usize,
+    ) -> usize {
         match pile_type {
-            PileType::Tableau => {
-                board.get_tableau_pile(pile_index)
-                    .and_then(|p| {
-                        p.cards.iter()
-                            .enumerate()
-                            .rev()
-                            .find(|(_, card)| card.face_up)
-                            .map(|(idx, _)| idx)
-                    })
-                    .unwrap_or(0)
-            }
-            PileType::Foundation => {
-                board.get_foundation_pile(pile_index)
-                    .map(|p| if p.len() > 0 { p.len() - 1 } else { 0 })
-                    .unwrap_or(0)
-            }
+            PileType::Tableau => board
+                .get_tableau_pile(pile_index)
+                .and_then(|p| {
+                    p.cards
+                        .iter()
+                        .enumerate()
+                        .rev()
+                        .find(|(_, card)| card.face_up)
+                        .map(|(idx, _)| idx)
+                })
+                .unwrap_or(0),
+            PileType::Foundation => board
+                .get_foundation_pile(pile_index)
+                .map(|p| if !p.is_empty() { p.len() - 1 } else { 0 })
+                .unwrap_or(0),
             PileType::Waste => {
                 let len = board.waste.len();
                 if len > 0 { len - 1 } else { 0 }
@@ -264,7 +298,12 @@ impl SelectionManager {
         }
     }
 
-    fn get_face_up_card_at_index(board: &Board, pile_type: PileType, pile_index: usize, target_index: usize) -> usize {
+    fn get_face_up_card_at_index(
+        board: &Board,
+        pile_type: PileType,
+        pile_index: usize,
+        target_index: usize,
+    ) -> usize {
         match pile_type {
             PileType::Tableau => {
                 if let Some(pile) = board.get_tableau_pile(pile_index) {
@@ -284,7 +323,7 @@ impl SelectionManager {
                     0
                 }
             }
-            _ => Self::get_topmost_face_up_card_index(board, pile_type, pile_index)
+            _ => Self::get_topmost_face_up_card_index(board, pile_type, pile_index),
         }
     }
 }

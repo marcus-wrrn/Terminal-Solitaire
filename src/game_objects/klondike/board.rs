@@ -69,7 +69,7 @@ impl Board {
             PileType::Tableau => self.tableau.get(pile_index)?,
             PileType::Foundation => self.foundation.get(pile_index)?,
             PileType::Stock => &self.stock,
-            PileType::Waste => &self.waste
+            PileType::Waste => &self.waste,
         };
         Some(pile)
     }

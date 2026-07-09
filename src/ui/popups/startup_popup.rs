@@ -1,3 +1,4 @@
+use crate::controller::KeyBindings;
 use ratatui::{
     buffer::Buffer,
     layout::{self, Constraint, Flex, Layout, Rect},
@@ -5,20 +6,19 @@ use ratatui::{
     text::{Line, Span},
     widgets::{Block, BorderType, Borders, Clear, Padding, Paragraph, Widget},
 };
-use std::rc::Rc;
 use std::cell::RefCell;
-use crate::controller::KeyBindings;
+use std::rc::Rc;
 
 pub struct StartupPop {
     is_visible: bool,
-    key_binds: Rc<RefCell<KeyBindings>>
+    key_binds: Rc<RefCell<KeyBindings>>,
 }
 
 impl StartupPop {
     pub fn new(key_bindings: Rc<RefCell<KeyBindings>>) -> Self {
         Self {
             is_visible: false,
-            key_binds: key_bindings
+            key_binds: key_bindings,
         }
     }
 
@@ -45,25 +45,24 @@ impl StartupPop {
 
         let bindings = self.key_binds.borrow();
 
-        let key_style = Style::default().fg(Color::Cyan).add_modifier(Modifier::BOLD);
+        let key_style = Style::default()
+            .fg(Color::Cyan)
+            .add_modifier(Modifier::BOLD);
         let label_style = Style::default().fg(Color::White);
-        let header_style = Style::default().fg(Color::Yellow).add_modifier(Modifier::BOLD);
+        let header_style = Style::default()
+            .fg(Color::Yellow)
+            .add_modifier(Modifier::BOLD);
 
         let help_text = vec![
-            Line::from(vec![
-                Span::styled("*Game Guide*", header_style),
-            ]),
+            Line::from(vec![Span::styled("*Game Guide*", header_style)]),
             Line::from(""),
-            Line::from(vec![
-                Span::styled("Mouse Controls", header_style),
-            ]),
-            Line::from(vec![
-                Span::styled("Left Click or Hold & Drag to move cards from pile to pile", key_style)
-            ]),
+            Line::from(vec![Span::styled("Mouse Controls", header_style)]),
+            Line::from(vec![Span::styled(
+                "Left Click or Hold & Drag to move cards from pile to pile",
+                key_style,
+            )]),
             Line::from(""),
-            Line::from(vec![
-                Span::styled("KeyBoard Controls", header_style),
-            ]),
+            Line::from(vec![Span::styled("KeyBoard Controls", header_style)]),
             Line::from(vec![
                 Span::styled(bindings.move_left_str(), key_style),
                 Span::styled(" / ", label_style),
@@ -75,14 +74,14 @@ impl StartupPop {
                 Span::styled(" - For moving around", label_style),
             ]),
             Line::from(vec![
-                Span::styled(format!("{}/{}", bindings.select_str(), bindings.enter_str()), key_style),
+                Span::styled(
+                    format!("{}/{}", bindings.select_str(), bindings.enter_str()),
+                    key_style,
+                ),
                 Span::styled(" - Select Card and Move to new Pile", label_style),
             ]),
             Line::from(""),
-            Line::from(vec![
-                Span::styled("Actions", header_style),
-            ]),
-            
+            Line::from(vec![Span::styled("Actions", header_style)]),
             Line::from(vec![
                 Span::styled(bindings.cancel_str(), key_style),
                 Span::styled(" - Cancel selection", label_style),
@@ -92,9 +91,7 @@ impl StartupPop {
                 Span::styled(" - Draw from stock", label_style),
             ]),
             Line::from(""),
-            Line::from(vec![
-                Span::styled("Game Controls", header_style),
-            ]),
+            Line::from(vec![Span::styled("Game Controls", header_style)]),
             Line::from(vec![
                 Span::styled(bindings.restart_str(), key_style),
                 Span::styled(" - Restart Your game", label_style),
@@ -109,7 +106,7 @@ impl StartupPop {
             ]),
             Line::from(vec![
                 Span::styled(bindings.help_str(), key_style),
-                Span::styled(" - Open Help Menu", label_style)
+                Span::styled(" - Open Help Menu", label_style),
             ]),
             Line::from(""),
         ];

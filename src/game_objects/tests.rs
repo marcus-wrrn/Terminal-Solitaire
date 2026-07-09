@@ -1,4 +1,5 @@
 #[cfg(test)]
+#[allow(clippy::module_inception)]
 mod tests {
     use super::super::{Card, Deck, Pile, PileType, Rank, Suit};
     use std::collections::HashSet;
@@ -179,10 +180,7 @@ mod tests {
             .filter(|(c1, c2)| c1 == c2)
             .count();
 
-        assert!(
-            same_count < 52,
-            "Shuffled deck should have different order"
-        );
+        assert!(same_count < 52, "Shuffled deck should have different order");
     }
 
     #[test]

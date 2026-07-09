@@ -10,6 +10,10 @@ pub struct Selection {
 
 impl Selection {
     pub fn new(pile: PileType, pile_index: usize, card_index: usize) -> Self {
-        Self { pile, pile_index, card_index }
+        Self {
+            pile,
+            pile_index,
+            card_index,
+        }
     }
 }

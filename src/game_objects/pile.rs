@@ -53,9 +53,7 @@ impl Pile {
     fn can_place_on_tableau(&self, card: &Card) -> bool {
         match self.peek() {
             None => card.rank == Rank::King,
-            Some(top_card) => {
-                card.is_opposite_color(top_card) && card.is_one_rank_lower(top_card)
-            }
+            Some(top_card) => card.is_opposite_color(top_card) && card.is_one_rank_lower(top_card),
         }
     }
 

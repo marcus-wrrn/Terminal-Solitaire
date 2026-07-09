@@ -1,6 +1,6 @@
-use crate::rendering::klondike::RenderingInstructions;
-use crate::game_objects::{Board, Selection};
 use super::board_renderer::BoardRenderer;
+use crate::game_objects::{Board, Selection};
+use crate::rendering::klondike::RenderingInstructions;
 use ratatui::{
     buffer::Buffer,
     layout::{Constraint, Flex, Layout, Rect},
@@ -8,7 +8,7 @@ use ratatui::{
 };
 
 pub struct GameRenderer {
-    board_renderer: BoardRenderer
+    board_renderer: BoardRenderer,
 }
 
 impl GameRenderer {
@@ -32,9 +32,9 @@ impl GameRenderer {
 
     pub fn render(&mut self, area: Rect, buf: &mut Buffer, render_instr: &RenderingInstructions) {
         let vertical_sections = Layout::vertical([
-            Constraint::Length(1),  // Title
-            Constraint::Length(1),  // Spacing
-            Constraint::Min(0),     // Board area (grows as needed)
+            Constraint::Length(1), // Title
+            Constraint::Length(1), // Spacing
+            Constraint::Min(0),    // Board area (grows as needed)
             Constraint::Length(8), // Debug log area
         ])
         .flex(Flex::Center)
@@ -47,7 +47,11 @@ impl GameRenderer {
             Style::default().fg(Color::Yellow),
         );
 
-        self.board_renderer.render(&render_instr.board_rendering_instr, buf, vertical_sections[2]);
+        self.board_renderer.render(
+            &render_instr.board_rendering_instr,
+            buf,
+            vertical_sections[2],
+        );
 
         if render_instr.debug_log.visible {
             render_instr.debug_log.render(vertical_sections[3], buf);

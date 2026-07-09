@@ -50,15 +50,13 @@ impl FIGfont {
     ) -> Result<FIGcharacter, String> {
         let mut characters = vec![];
         for i in 0..height {
-            let index = start_index + i as usize;
+            let index = start_index + i;
             let is_last_index = i == height - 1;
             let one_line_character =
                 FIGfont::extract_one_line(lines, index, height, hardblank, is_last_index)?;
             characters.push(one_line_character);
         }
-        Ok(FIGcharacter {
-            characters,
-        })
+        Ok(FIGcharacter { characters })
     }
 
     fn read_required_font(
@@ -132,7 +130,7 @@ impl FIGfont {
         let codetag_height = (headerline.height + 1) as usize;
         let codetag_lines = lines.len() - offset;
 
-        if codetag_lines % codetag_height != 0 {
+        if !codetag_lines.is_multiple_of(codetag_height) {
             return Err("codetag font is illegal.".to_string());
         }
 
@@ -179,10 +177,7 @@ impl FIGfont {
         // let _comments = FIGfont::read_comments(&lines, header_line.comment_lines)?;
         let fonts = FIGfont::read_fonts(&lines, &header_line)?;
 
-        Ok(FIGfont {
-            header_line,
-            fonts,
-        })
+        Ok(FIGfont { header_line, fonts })
     }
 
     pub fn convert(&self, message: &str) -> Option<FIGure<'_>> {
@@ -235,7 +230,10 @@ impl HeaderLine {
                 .next()
                 .unwrap();
 
-            Ok((String::from(&signature_with_hardblank[..hardblank_index]), hardblank))
+            Ok((
+                String::from(&signature_with_hardblank[..hardblank_index]),
+                hardblank,
+            ))
         }
     }
 

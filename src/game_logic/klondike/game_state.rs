@@ -1,5 +1,5 @@
-use crate::game_objects::{Board, Deck, PileType, Selection};
 use crate::game_logic::klondike::MoveExecutor;
+use crate::game_objects::{Board, Deck, PileType, Selection};
 
 pub struct GameState {
     board: Board,
@@ -13,9 +13,7 @@ impl GameState {
         let mut board = Board::new();
         board.setup(&mut deck);
 
-        Self {
-            board,
-        }
+        Self { board }
     }
 
     pub fn board(&self) -> &Board {
@@ -35,10 +33,10 @@ impl GameState {
                     if current_selection.card_index >= pile.len() {
                         return Err("No card at this position");
                     }
-                    if let Some(card) = pile.cards.get(current_selection.card_index) {
-                        if !card.face_up {
-                            return Err("Cannot pick up face-down card");
-                        }
+                    if let Some(card) = pile.cards.get(current_selection.card_index)
+                        && !card.face_up
+                    {
+                        return Err("Cannot pick up face-down card");
                     }
                     Ok(())
                 } else {
@@ -68,7 +66,11 @@ impl GameState {
         }
     }
 
-    pub fn place_cards(&mut self, source: Selection, target: Selection) -> Result<(), &'static str> {
+    pub fn place_cards(
+        &mut self,
+        source: Selection,
+        target: Selection,
+    ) -> Result<(), &'static str> {
         if source == target {
             return Ok(());
         }
@@ -79,17 +81,21 @@ impl GameState {
                     &mut self.board,
                     source.pile_index,
                     target.pile_index,
-                    source.card_index
+                    source.card_index,
                 )?;
                 Ok(())
             }
             (PileType::Tableau, PileType::Foundation) => {
-                if let Some(pile) = self.board.get_tableau_pile(source.pile_index) {
-                    if source.card_index != pile.len() - 1 {
-                        return Err("Can only move top card to foundation");
-                    }
+                if let Some(pile) = self.board.get_tableau_pile(source.pile_index)
+                    && source.card_index != pile.len() - 1
+                {
+                    return Err("Can only move top card to foundation");
                 }
-                MoveExecutor::move_card_to_foundation(&mut self.board, source.pile_index, target.pile_index)?;
+                MoveExecutor::move_card_to_foundation(
+                    &mut self.board,
+                    source.pile_index,
+                    target.pile_index,
+                )?;
                 Ok(())
             }
             (PileType::Waste, PileType::Tableau) => {
@@ -101,17 +107,19 @@ impl GameState {
                 Ok(())
             }
             (PileType::Foundation, PileType::Tableau) => {
-                if let Some(pile) = self.board.get_foundation_pile(source.pile_index) {
-                    if source.card_index != pile.len() - 1 {
-                        return Err("Can only move top card from foundation");
-                    }
+                if let Some(pile) = self.board.get_foundation_pile(source.pile_index)
+                    && source.card_index != pile.len() - 1
+                {
+                    return Err("Can only move top card from foundation");
                 }
-                MoveExecutor::move_foundation_to_tableau(&mut self.board, source.pile_index, target.pile_index)?;
+                MoveExecutor::move_foundation_to_tableau(
+                    &mut self.board,
+                    source.pile_index,
+                    target.pile_index,
+                )?;
                 Ok(())
             }
-            _ => {
-                Err("Invalid move")
-            }
+            _ => Err("Invalid move"),
         }
     }
 
@@ -133,9 +141,10 @@ impl GameState {
     }
 
     pub fn all_tableau_cards_face_up(&self) -> bool {
-        self.board.tableau.iter().all(|pile| {
-            pile.cards.iter().all(|card| card.face_up)
-        })
+        self.board
+            .tableau
+            .iter()
+            .all(|pile| pile.cards.iter().all(|card| card.face_up))
     }
 
     pub fn is_valid_placement(&self, source: Selection, target: Selection) -> bool {
@@ -149,10 +158,10 @@ impl GameState {
                     if source.card_index >= source_pile.len() {
                         return false;
                     }
-                    if let Some(first_card) = source_pile.cards.get(source.card_index) {
-                        if let Some(target_pile) = self.board.get_tableau_pile(target.pile_index) {
-                            return target_pile.can_place_card(first_card);
-                        }
+                    if let Some(first_card) = source_pile.cards.get(source.card_index)
+                        && let Some(target_pile) = self.board.get_tableau_pile(target.pile_index)
+                    {
+                        return target_pile.can_place_card(first_card);
                     }
                 }
                 false
@@ -162,27 +171,27 @@ impl GameState {
                     if source.card_index != pile.len() - 1 {
                         return false;
                     }
-                    if let Some(card) = pile.peek() {
-                        if let Some(foundation) = self.board.get_foundation_pile(target.pile_index) {
-                            return foundation.can_place_card(card);
-                        }
+                    if let Some(card) = pile.peek()
+                        && let Some(foundation) = self.board.get_foundation_pile(target.pile_index)
+                    {
+                        return foundation.can_place_card(card);
                     }
                 }
                 false
             }
             (PileType::Waste, PileType::Tableau) => {
-                if let Some(card) = self.board.waste.peek() {
-                    if let Some(pile) = self.board.get_tableau_pile(target.pile_index) {
-                        return pile.can_place_card(card);
-                    }
+                if let Some(card) = self.board.waste.peek()
+                    && let Some(pile) = self.board.get_tableau_pile(target.pile_index)
+                {
+                    return pile.can_place_card(card);
                 }
                 false
             }
             (PileType::Waste, PileType::Foundation) => {
-                if let Some(card) = self.board.waste.peek() {
-                    if let Some(pile) = self.board.get_foundation_pile(target.pile_index) {
-                        return pile.can_place_card(card);
-                    }
+                if let Some(card) = self.board.waste.peek()
+                    && let Some(pile) = self.board.get_foundation_pile(target.pile_index)
+                {
+                    return pile.can_place_card(card);
                 }
                 false
             }
@@ -191,10 +200,10 @@ impl GameState {
                     if source.card_index != pile.len() - 1 {
                         return false;
                     }
-                    if let Some(card) = pile.peek() {
-                        if let Some(tableau) = self.board.get_tableau_pile(target.pile_index) {
-                            return tableau.can_place_card(card);
-                        }
+                    if let Some(card) = pile.peek()
+                        && let Some(tableau) = self.board.get_tableau_pile(target.pile_index)
+                    {
+                        return tableau.can_place_card(card);
                     }
                 }
                 false

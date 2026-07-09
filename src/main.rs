@@ -1,14 +1,14 @@
-mod game_objects;
-mod game_logic;
-mod rendering;
 mod controller;
+mod game_logic;
+mod game_objects;
+mod rendering;
 mod resources;
 mod ui;
 
 use game_logic::GameManager;
 use ratatui::crossterm::{
+    event::{DisableMouseCapture, EnableMouseCapture},
     execute,
-    event::{EnableMouseCapture, DisableMouseCapture},
 };
 use std::io;
 

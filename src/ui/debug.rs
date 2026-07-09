@@ -48,7 +48,7 @@ impl DebugLog {
                 Block::default()
                     .borders(Borders::ALL)
                     .title("Debug Log")
-                    .style(Style::default().fg(Color::Cyan))
+                    .style(Style::default().fg(Color::Cyan)),
             )
             .style(Style::default().fg(Color::White));
 

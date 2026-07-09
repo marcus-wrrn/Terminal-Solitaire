@@ -53,7 +53,7 @@ pub struct KeyBindings {
     /// Key to show help
     pub options_menu: KeyCode,
 
-    pub open_menu: KeyCode
+    pub open_menu: KeyCode,
 }
 
 impl Default for KeyBindings {
@@ -90,7 +90,7 @@ impl KeyBindings {
                     return "Space Bar".to_string();
                 }
                 c.to_string()
-            },
+            }
             KeyCode::Enter => "Enter".to_string(),
             KeyCode::Esc => "Esc".to_string(),
             KeyCode::Backspace => "Backspace".to_string(),

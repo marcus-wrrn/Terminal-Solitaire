@@ -20,7 +20,12 @@ impl MoveExecutor {
         }
     }
 
-    pub fn move_card_to_tableau(board: &mut Board, from_pile: usize, to_pile: usize, card_index: usize) -> Result<(), &'static str> {
+    pub fn move_card_to_tableau(
+        board: &mut Board,
+        from_pile: usize,
+        to_pile: usize,
+        card_index: usize,
+    ) -> Result<(), &'static str> {
         if from_pile >= 7 || to_pile >= 7 {
             return Err("Invalid pile index");
         }
@@ -34,10 +39,10 @@ impl MoveExecutor {
             return Err("Invalid from pile");
         };
 
-        if let Some(first_card) = cards_to_move.first() {
-            if !board.tableau[to_pile].can_place_card(first_card) {
-                return Err("Cannot place card on target pile");
-            }
+        if let Some(first_card) = cards_to_move.first()
+            && !board.tableau[to_pile].can_place_card(first_card)
+        {
+            return Err("Cannot place card on target pile");
         }
 
         let cards = board.tableau[from_pile].take_cards_from(card_index);
@@ -48,14 +53,18 @@ impl MoveExecutor {
         Ok(())
     }
 
-    pub fn move_card_to_foundation(board: &mut Board, from_tableau: usize, foundation_index: usize) -> Result<(), &'static str> {
+    pub fn move_card_to_foundation(
+        board: &mut Board,
+        from_tableau: usize,
+        foundation_index: usize,
+    ) -> Result<(), &'static str> {
         if from_tableau >= 7 || foundation_index >= 4 {
             return Err("Invalid pile index");
         }
 
-        let card = board.tableau[from_tableau].peek()
-            .ok_or("No card to move")?
-            .clone();
+        let card = *board.tableau[from_tableau]
+            .peek()
+            .ok_or("No card to move")?;
 
         if !board.foundation[foundation_index].can_place_card(&card) {
             return Err("Cannot place card on foundation");
@@ -70,14 +79,15 @@ impl MoveExecutor {
         }
     }
 
-    pub fn move_waste_to_tableau(board: &mut Board, tableau_index: usize) -> Result<(), &'static str> {
+    pub fn move_waste_to_tableau(
+        board: &mut Board,
+        tableau_index: usize,
+    ) -> Result<(), &'static str> {
         if tableau_index >= 7 {
             return Err("Invalid tableau index");
         }
 
-        let card = board.waste.peek()
-            .ok_or("No card in waste")?
-            .clone();
+        let card = *board.waste.peek().ok_or("No card in waste")?;
 
         if !board.tableau[tableau_index].can_place_card(&card) {
             return Err("Cannot place card on tableau");
@@ -91,14 +101,15 @@ impl MoveExecutor {
         }
     }
 
-    pub fn move_waste_to_foundation(board: &mut Board, foundation_index: usize) -> Result<(), &'static str> {
+    pub fn move_waste_to_foundation(
+        board: &mut Board,
+        foundation_index: usize,
+    ) -> Result<(), &'static str> {
         if foundation_index >= 4 {
             return Err("Invalid foundation index");
         }
 
-        let card = board.waste.peek()
-            .ok_or("No card in waste")?
-            .clone();
+        let card = *board.waste.peek().ok_or("No card in waste")?;
 
         if !board.foundation[foundation_index].can_place_card(&card) {
             return Err("Cannot place card on foundation");
@@ -112,13 +123,16 @@ impl MoveExecutor {
         }
     }
 
-    pub fn move_stock_to_foundation(board: &mut Board, foundation_index: usize) -> Result<(), &'static str> {
+    pub fn move_stock_to_foundation(
+        board: &mut Board,
+        foundation_index: usize,
+    ) -> Result<(), &'static str> {
         if foundation_index >= 4 {
             return Err("Invalid foundation index");
         }
 
         for i in 0..board.stock.cards.len() {
-            let mut card = board.stock.cards[i].clone();
+            let mut card = board.stock.cards[i];
             card.face_up = true;
 
             if board.foundation[foundation_index].can_place_card(&card) {
@@ -133,7 +147,10 @@ impl MoveExecutor {
 
     /// Used during the win state to move any card from the waste pile to the foundation
     /// Should not be called during normal gameplay
-    pub fn move_waste_card_to_foundation(board: &mut Board, foundation_index: usize) -> Result<(), &'static str> {
+    pub fn move_waste_card_to_foundation(
+        board: &mut Board,
+        foundation_index: usize,
+    ) -> Result<(), &'static str> {
         if foundation_index >= 4 {
             return Err("Invalid foundation index");
         }
@@ -151,14 +168,18 @@ impl MoveExecutor {
         Err("No valid card in waste for this foundation")
     }
 
-    pub fn move_foundation_to_tableau(board: &mut Board, foundation_index: usize, tableau_index: usize) -> Result<(), &'static str> {
+    pub fn move_foundation_to_tableau(
+        board: &mut Board,
+        foundation_index: usize,
+        tableau_index: usize,
+    ) -> Result<(), &'static str> {
         if foundation_index >= 4 || tableau_index >= 7 {
             return Err("Invalid pile index");
         }
 
-        let card = board.foundation[foundation_index].peek()
-            .ok_or("No card in foundation")?
-            .clone();
+        let card = *board.foundation[foundation_index]
+            .peek()
+            .ok_or("No card in foundation")?;
 
         if !board.tableau[tableau_index].can_place_card(&card) {
             return Err("Cannot place card on tableau");
