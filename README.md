@@ -27,13 +27,13 @@ Includes:
 
 ### Installation
 
-Run:
+In your terminal or Command Line Tool run:
 
 ```
 curl -sSfL https://raw.githubusercontent.com/marcus-wrrn/Terminal-Solitaire/main/install.sh | sh
 ```
 
-in your terminal
+Solitaire is supported on Linux, MacOS and Windows
 
 
 ### Controls
