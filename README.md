@@ -28,7 +28,10 @@ Includes:
 ### Installation
 
 Run:
+
+```
 curl -sSfL https://raw.githubusercontent.com/marcus-wrrn/Terminal-Solitaire/main/install.sh | sh
+```
 
 in your terminal
 
