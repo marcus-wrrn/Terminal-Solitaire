@@ -1,6 +1,10 @@
-# Solitaire
+# Solitaire De-Imagined
 
-A terminal-based solitaire (Klondike) game built with Rust and [ratatui](https://ratatui.rs/).
+A terminal-based game of Klondike Solitaire built with Rust and the [ratatui](https://ratatui.rs/) TUI framework.
+
+Includes both Mouse & Keyboard controls, Drag and Drop functionality and an autoclick function.
+
+Also includes a win screen animation.
 
 ## Installation
 
@@ -15,13 +19,6 @@ Simply run:
 solitaire
 ```
 
-## Features
-
-- Full Klondike solitaire gameplay
-- Keyboard and mouse controls
-- Terminal-based UI with smooth rendering
-- Win animations and auto-play
-- Options menu with rebindable keys
 
 ## Controls
 
