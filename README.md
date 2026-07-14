@@ -10,6 +10,7 @@ Provides a sleek retro design, your CLI agent will love.
 - Mouse & Keyboard controls 
 - Drag and Drop functionality
 - Autoclick
+- Reactive UI
 
 ![Klondike Solitaire](assets/drag_and_drop.png)
 
