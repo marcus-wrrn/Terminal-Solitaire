@@ -16,7 +16,7 @@ Most terminal games are unfortunately kind of ugly, or run slower than they feel
 
 ### Controls
 
-- Mouse: Click to select and move cards
+- Mouse: Click to select and drag cards
 - Keyboard: Navigate with arrow keys, select with Enter/Space
 - Press `?` or `h` for help menu
 - Press `Esc` to open options menu
