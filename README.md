@@ -14,8 +14,16 @@ Most terminal games are unfortunately kind of ugly, or run slower than they feel
 
 ![Klondike Solitaire](assets/drag_and_drop.png)
 
+### Controls
+
+- Mouse: Click to select and move cards
+- Keyboard: Navigate with arrow keys, select with Enter/Space
+- Press `?` or `h` for help menu
+- Press `Esc` to open options menu
 
 ## Installation
+
+### With bash or powershell
 
 Linux / MacOS (or Windows with Git Bash/WSL), run in your terminal:
 
@@ -29,12 +37,13 @@ Windows (PowerShell):
 irm https://raw.githubusercontent.com/marcus-wrrn/Terminal-Solitaire/main/install.ps1 | iex
 ```
 
-Or build from source by cloning the repo and running `cargo build`.
+Afterwards all you need to do is run `solitaire` in your terminal.
 
-### Controls
+## Download binary
+Download the binary that supports your OS from the ![releases page](https://github.com/marcus-wrrn/Terminal-Solitaire/releases)
 
-- Mouse: Click to select and move cards
-- Keyboard: Navigate with arrow keys, select with Enter/Space
-- Press `?` or `h` for help menu
-- Press `Esc` to open options menu
+### With Cargo
+First clone the repo and then build using: `cargo build`.
+
+
 
