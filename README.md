@@ -1,4 +1,4 @@
-# Solitaire Imagined
+# Just Solitaire 
 
 A terminal-based game of Klondike built with Rust and the [ratatui](https://ratatui.rs/) TUI framework. Designed to be able to run on anything.
 
